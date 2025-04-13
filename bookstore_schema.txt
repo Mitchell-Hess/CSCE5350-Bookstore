@@ -1,0 +1,179 @@
+
+===== BOOKSTORE RELATIONAL SCHEMA =====
+
+----- Core Entities -----
+
+Book (
+    book_id           PK,
+    ISBN,
+    title,
+    publication_date,
+    edition,
+    price,
+    page_count,
+    description,
+    publisher_id       FK → Publisher
+)
+
+Author (
+    author_id         PK,
+    first_name,
+    last_name,
+    birth_date,
+    nationality,
+    biography
+)
+
+Publisher (
+    publisher_id      PK,
+    name,
+    address,
+    phone,
+    email,
+    website
+)
+
+Genre (
+    genre_id          PK,
+    name,
+    description
+)
+
+Customer (
+    customer_id       PK,
+    first_name,
+    last_name,
+    email,
+    phone,
+    address,
+    registration_date
+)
+
+----- Inventory & Sales -----
+
+Inventory (
+    inventory_id       PK,
+    book_id            FK → Book,
+    quantity_in_stock,
+    last_restock_date,
+    location_in_store
+)
+
+Order (
+    order_id           PK,
+    customer_id        FK → Customer,
+    order_date,
+    total_amount,
+    status,
+    payment_method
+)
+
+Order_Detail (
+    order_detail_id    PK,
+    order_id           FK → Order,
+    book_id            FK → Book,
+    quantity,
+    unit_price,
+    discount
+)
+
+Employee (
+    employee_id        PK,
+    first_name,
+    last_name,
+    position,
+    hire_date,
+    salary,
+    email,
+    phone
+)
+
+Shift (
+    shift_id           PK,
+    employee_id        FK → Employee,
+    start_time,
+    end_time,
+    date
+)
+
+----- Store Operations -----
+
+Store (
+    store_id           PK,
+    name,
+    address,
+    phone,
+    email,
+    opening_hours
+)
+
+Supplier (
+    supplier_id        PK,
+    name,
+    contact_person,
+    phone,
+    email,
+    lead_time_days
+)
+
+Purchase_Order (
+    po_id              PK,
+    supplier_id        FK → Supplier,
+    order_date,
+    expected_delivery_date,
+    status,
+    total_amount
+)
+
+Purchase_Order_Detail (
+    po_detail_id       PK,
+    po_id              FK → Purchase_Order,
+    book_id            FK → Book,
+    quantity,
+    unit_cost
+)
+
+----- Additional Features -----
+
+Review (
+    review_id          PK,
+    book_id            FK → Book,
+    customer_id        FK → Customer,
+    rating,
+    comment,
+    review_date
+)
+
+Book_Author (
+    book_id            PK, FK → Book,
+    author_id          PK, FK → Author,
+    role
+)
+
+Book_Genre (
+    book_id            PK, FK → Book,
+    genre_id           PK, FK → Genre
+)
+
+Promotion (
+    promotion_id       PK,
+    name,
+    description,
+    discount_percentage,
+    start_date,
+    end_date
+)
+
+Promotion_Book (
+    promotion_id       PK, FK → Promotion,
+    book_id            PK, FK → Book
+)
+
+Membership (
+    membership_id      PK,
+    customer_id        FK → Customer,
+    level,
+    join_date,
+    expiration_date,
+    points_balance
+)
