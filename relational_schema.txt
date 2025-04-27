@@ -145,14 +145,14 @@ Review (
 )
 
 Book_Author (
-    book_id            PK, FK → Book,
-    author_id          PK, FK → Author,
+    book_id            FK → Book,
+    author_id          FK → Author,
     role
 )
 
 Book_Genre (
-    book_id            PK, FK → Book,
-    genre_id           PK, FK → Genre
+    book_id            FK → Book,
+    genre_id           FK → Genre
 )
 
 Promotion (
@@ -165,8 +165,8 @@ Promotion (
 )
 
 Promotion_Book (
-    promotion_id       PK, FK → Promotion,
-    book_id            PK, FK → Book
+    promotion_id       FK → Promotion,
+    book_id            FK → Book
 )
 
 Membership (
