@@ -2,10 +2,16 @@ CREATE DATABASE IF NOT EXISTS Bookstore;
 USE Bookstore;
 
 -- Core Entities
+CREATE TABLE Contact (
+    contact_id INT AUTO_INCREMENT PRIMARY KEY
+    email VARCHAR(100),
+    phone VARCHAR(20),
+);
+
 CREATE TABLE Author (
     author_id INT AUTO_INCREMENT PRIMARY KEY,
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
     birth_date DATE,
     nationality VARCHAR(100),
     biography TEXT
@@ -13,11 +19,11 @@ CREATE TABLE Author (
 
 CREATE TABLE Publisher (
     publisher_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
+    name VARCHAR(255) NOT NULL,
     address TEXT,
-    phone VARCHAR(20),
-    email VARCHAR(100),
-    website VARCHAR(255)
+    website VARCHAR(255),
+    contact_id INT,
+    FOREIGN KEY (contact_id) REFERENCES Contact(contact_id)
 );
 
 CREATE TABLE Genre (
@@ -43,10 +49,10 @@ CREATE TABLE Customer (
     customer_id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
-    email VARCHAR(100),
-    phone VARCHAR(20),
     address TEXT,
-    registration_date DATE
+    registration_date DATE,
+    contact_id INT,
+    FOREIGN KEY (contact_id) REFERENCES Contact(contact_id)
 );
 
 -- Inventory & Sales
@@ -87,8 +93,10 @@ CREATE TABLE Employee (
     position VARCHAR(100),
     hire_date DATE,
     salary DECIMAL(10, 2),
-    email VARCHAR(100),
-    phone VARCHAR(20)
+    store_id INT,
+    contact_id INT,
+    FOREIGN KEY (store_id) REFERENCES Store(store_id)
+    FOREIGN KEY (contact_id) REFERENCES Contact(contact_id)
 );
 
 CREATE TABLE Shift (
@@ -105,18 +113,18 @@ CREATE TABLE Store (
     store_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255),
     address TEXT,
-    phone VARCHAR(20),
-    email VARCHAR(100),
-    opening_hours VARCHAR(100)
+    opening_hours VARCHAR(100),
+    contact_id INT,
+    FOREIGN KEY (contact_id) REFERENCES Contact(contact_id)
 );
 
 CREATE TABLE Supplier (
     supplier_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255),
     contact_person VARCHAR(100),
-    phone VARCHAR(20),
-    email VARCHAR(100),
-    lead_time_days INT
+    lead_time_days INT,
+    contact_id INT,
+    FOREIGN KEY (contact_id) REFERENCES Contact(contact_id)
 );
 
 CREATE TABLE Purchase_Order (
