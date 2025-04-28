@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS GoodBookstore;
-USE GoodBookstore;
+CREATE DATABASE IF NOT EXISTS Bookstore;
+USE Bookstore;
 
 -- Core Entities
 CREATE TABLE Author (
