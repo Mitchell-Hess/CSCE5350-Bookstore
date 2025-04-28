@@ -1,4 +1,13 @@
--- 1. Book
+-- 1. Publisher
+INSERT INTO Publisher (name, address, phone, email, website)
+VALUES
+('Belhune Publishing', '8 Arch Ave, Indianapolis, IN', '312-416-7800', 'contact@BelhunePublishing.com', 'www.BelhunePublishing.com'),
+('Bento Books','400 Millet Blvd, New York, NY','807-624-1210', 'info@BentoBooks.com',    'www.BentoBooks.com'),
+('Cleis Press','9800 Datrod Rd, El Paso, TX', '976-313-3044', 'support@CleisPress.com', 'www.CleisPress.com'),
+('Paton Press', '11 Mallard St, Normal, IL', '309-464-5005', 'info@PatonPress.com',  'www.PatonPress.com'),
+('Epic Reads', '654 York Ln, Denton, TX','978-125-6066', 'contact@epicreads.com', 'www.epicreads.com');
+
+-- 2. Book
 INSERT INTO Book (ISBN, title, publication_date, edition, price, page_count, description, publisher_id)
 VALUES 
 ('0793162484100', 'Introduction to MySQL','2020-01-15', '1st', 39.99, 300, 'An introduction to MySQL.', 1),
@@ -7,7 +16,7 @@ VALUES
 ('5723161484103', 'Learning Python','2018-05-25', '3rd', 39.99, 450, 'Comprehensive Python programming guide.', 3),
 ('0783161484104', 'Romeo and Juliet',   '2022-07-11', '1st', 15.99, 150, 'Love story of Romeo and Juliet', 5);
 
--- 2. Author
+-- 3. Author
 INSERT INTO Author (first_name, last_name, birth_date, nationality, biography)
 VALUES
 ('Abby','Dogg','1999-05-20', 'American', 'Expert in database systems.'),
@@ -15,15 +24,6 @@ VALUES
 ('Carl','Hang','1985-12-08', 'British',  'Technical writer'),
 ('Bet', 'Sack','1990-02-28', 'Ghanaian',  'Author of Love stories'),
 ('Pei','Geng','1972-11-10', 'Chinese',  'Database performance expert.');
-
--- 3. Publisher
-INSERT INTO Publisher (name, address, phone, email, website)
-VALUES
-('Belhune Publishing', '8 Arch Ave, Indianapolis, IN', '312-416-7800', 'contact@BelhunePublishing.com', 'www.BelhunePublishing.com'),
-('Bento Books','400 Millet Blvd, New York, NY','807-624-1210', 'info@BentoBooks.com',    'www.BentoBooks.com'),
-('Cleis Press','9800 Datrod Rd, El Paso, TX', '976-313-3044', 'support@CleisPress.com', 'www.CleisPress.com'),
-('Paton Press', '11 Mallard St, Normal, IL', '309-464-5005', 'info@PatonPress.com',  'www.PatonPress.com'),
-('Epic Reads', '654 York Ln, Denton, TX','978-125-6066', 'contact@epicreads.com', 'www.epicreads.com');
 
 -- 4. Genre
 INSERT INTO Genre (name, description)
@@ -80,7 +80,7 @@ VALUES
 ('Isa', 'Hang', 'Customer Service', '2023-01-05', 35000.00, 'isa.hang@goodbookstore.com','212-711-8088');
 
 -- 10. Shift
-INSERT INTO Shift (employee_id, start_time, end_time, shift_date)
+INSERT INTO Shift (employee_id, start_time, end_time, date)
 VALUES
 (1, '2025-04-26 09:00:00', '2025-04-26 17:00:00', '2025-04-26'),
 (2, '2025-04-26 10:00:00', '2025-04-26 18:00:00', '2025-04-26'),
@@ -155,7 +155,8 @@ VALUES
 ('Summer Sales','Get 20% off on all technology books.', 20.00, '2025-05-01', '2023-08-30'),
 ('Back to School Sales', 'Discounts for students on select books.', 10.00, '2025-08-01', '2025-09-01'),
 ('Holiday Specials', '20% off select titles for holiday season.', 20.00, '2025-01-01', '2025-01-31'),
-('Clearance', 'Up to 50% off clearance items.', 50.00, '2025-01-01', '2025-12-30');
+('Clearance', 'Up to 50% off clearance items.', 50.00, '2025-01-01', '2025-12-30'),
+('Black Friday', 'BOGO on select books for Black Friday.', 100.00, '2025-11-20', '2025-12-01');
 
 -- 19. Promotion_Book
 INSERT INTO Promotion_Book (promotion_id, book_id)
