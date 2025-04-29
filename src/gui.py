@@ -2,6 +2,15 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
+from crud_operations.contact_operations import *
+from crud_operations.customer_operations import *
+from crud_operations.employee_operations import *
+from crud_operations.inventory_operations import *
+from crud_operations.management_operations import *
+from crud_operations.promotion_operations import *
+from crud_operations.purchase_order_operations import *
+from crud_operations.review_operations import *
+
 class BookstoreApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -88,7 +97,7 @@ class BookstoreApp(tk.Tk):
         inventory_notebook.pack(expand=1, fill="both")
 
         # Add Book Tab
-        fields = ["Author", "ISBN", "Publication Date", "Edition", "Price", "Page Count", "Description"]
+        fields = ["Author's First Name", "Author's Last Name", "ISBN", "Title", "Publication Date", "Edition", "Price", "Page Count", "Description"]
         self.book_entries = {}
 
         for field in fields:
@@ -100,7 +109,7 @@ class BookstoreApp(tk.Tk):
             self.book_entries[field] = entry
 
         #TODO: Add add book to inventory function
-        #tk.Button(add_tab, text="Add Book", command=self.add_book_to_inventory).pack(pady=20)
+        tk.Button(add_tab, text="Add Book", command=self.add_book_to_inventory).pack(pady=20)
 
         # Manage Inventory Tab
         tk.Label(manage_tab, text="Search by Title, Author, or ISBN").pack(pady=10)
@@ -210,6 +219,58 @@ class BookstoreApp(tk.Tk):
         #tk.Button(supplier_tab, text="Add Supplier", command=self.add_supplier).pack(pady=20)
         #tk.Button(supplier_tab, text="Edit Supplier", command=self.edit_supplier).pack(pady=5)
         #tk.Button(supplier_tab, text="Remove Supplier", command=self.remove_supplier).pack(pady=5)
+
+    def search_books(self):
+        query = self.search_entry.get()
+        if not query:
+            messagebox.showwarning("Input Error", "Please enter a search term.")
+            return
+
+        results = search_books_by_title(query)
+
+        self.search_results.delete(0, tk.END)
+        for row in results:
+            self.search_results.insert(tk.END, f"{row[0]} - {row[2]} - ${row[5]}")
+
+    # --------- Customer Tab Helper Functions ----------
+
+    # TODO
+
+    # --------- Inventory Tab Helper Functions ----------
+
+    def add_book_to_inventory(self):
+        # Get user input
+        author_first_name = self.book_entries["Author's First Name"].get()
+        author_last_name = self.book_entries["Author's Last Name"].get()
+        ISBN = self.book_entries["ISBN"].get()
+        title = self.book_entries["Title"].get()
+        publication_date = self.book_entries["Publication Date"].get()
+        edition = self.book_entries["Edition"].get()
+        price = float(self.book_entries["Price"].get())
+        page_count = int(self.book_entries["Page Count"].get())
+        description = self.book_entries["Description"].get()
+        publisher_id = 1  # Placeholder; ideally selected from a dropdown
+
+        try:
+            book_id = create_book(ISBN, title, publication_date, edition, price, page_count, description, publisher_id)
+            print("book id: ", book_id)
+            author_id = find_author_id(author_first_name, author_last_name)
+            print("author id: ", author_id)
+            create_book_author(book_id, author_id, "primary author")
+            messagebox.showinfo("Success", "Book added successfully.")
+        except Exception as err:
+            messagebox.showerror("Database Error", str(err))
+
+    # TODO
+
+    # --------- Employees Tab Helper Functions ----------
+
+    #TODO
+
+    # --------- Management Tab Helper Functions ----------
+
+    #TODO
+
 
 if __name__ == "__main__":
     app = BookstoreApp()
