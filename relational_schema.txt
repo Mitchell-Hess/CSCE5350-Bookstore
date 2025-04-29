@@ -3,6 +3,12 @@
 
 ----- Core Entities -----
 
+Contact (
+    contact_id        PK,
+    email,
+    phone
+)
+
 Book (
     book_id           PK,
     ISBN,
@@ -28,9 +34,8 @@ Publisher (
     publisher_id      PK,
     name,
     address,
-    phone,
-    email,
-    website
+    website,
+    contact_id        FK -> Contact
 )
 
 Genre (
@@ -44,9 +49,8 @@ Customer (
     first_name,
     last_name,
     email,
-    phone,
-    address,
-    registration_date
+    registration_date,
+    contact_id        FK -> Contact
 )
 
 ----- Inventory & Sales -----
@@ -77,6 +81,16 @@ Order_Detail (
     discount
 )
 
+----- Store Operations -----
+
+Store (
+    store_id           PK,
+    name,
+    address,
+    opening_hours,
+    contact_id         FK -> Contact
+)
+
 Employee (
     employee_id        PK,
     first_name,
@@ -84,8 +98,8 @@ Employee (
     position,
     hire_date,
     salary,
-    email,
-    phone
+    store_id           FK -> Store
+    contact_id         FK -> Contact
 )
 
 Shift (
@@ -96,24 +110,12 @@ Shift (
     date
 )
 
------ Store Operations -----
-
-Store (
-    store_id           PK,
-    name,
-    address,
-    phone,
-    email,
-    opening_hours
-)
-
 Supplier (
     supplier_id        PK,
     name,
     contact_person,
-    phone,
-    email,
-    lead_time_days
+    lead_time_days,
+    contact_id         FK -> Contact
 )
 
 Purchase_Order (

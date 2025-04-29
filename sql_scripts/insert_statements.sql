@@ -1,4 +1,40 @@
--- 1. Book
+-- 1. Contact
+INSERT INTO Contact (email, phone)
+VALUES
+('contact@publisher1.com', '111-234-3456'),
+('contact@publisher2.com', '111-764-0294'),
+('contact@publisher3.com', '111-859-0129'),
+('contact@publisher4.com', '111-459-2348'),
+('contact@publisher5.com', '111-394-5834'),
+('contact@supplier1.com', '222-234-3456'),
+('contact@supplier2.com', '222-764-0294'),
+('contact@supplier3.com', '222-859-0129'),
+('contact@supplier4.com', '222-459-2348'),
+('contact@supplier5.com', '222-394-5834'),
+('contact@employee1.com', '333-234-3456'),
+('contact@employee2.com', '333-764-0294'),
+('contact@employee3.com', '333-859-0129'),
+('contact@employee4.com', '333-459-2348'),
+('contact@employee5.com', '333-394-5834'),
+('contact@store1.com', '444-234-3456'),
+('contact@store2.com', '444-764-0294'),
+('contact@store3.com', '444-859-0129'),
+('contact@customer1.com', '555-234-3456'),
+('contact@customer2.com', '555-764-0294'),
+('contact@customer3.com', '555-859-0129'),
+('contact@customer4.com', '555-459-2348'),
+('contact@customer5.com', '5552-394-5834');
+
+-- 1. Publisher
+INSERT INTO Publisher (name, address, website, contact_id)
+VALUES
+('Belhune Publishing', '8 Arch Ave, Indianapolis, IN', 'www.BelhunePublishing.com', 1),
+('Bento Books','400 Millet Blvd, New York, NY', 'www.BentoBooks.com', 2),
+('Cleis Press','9800 Datrod Rd, El Paso, TX', 'www.CleisPress.com', 3),
+('Paton Press', '11 Mallard St, Normal, IL', 'www.PatonPress.com', 4),
+('Epic Reads', '654 York Ln, Denton, TX', 'www.epicreads.com', 5);
+
+-- 2. Book
 INSERT INTO Book (ISBN, title, publication_date, edition, price, page_count, description, publisher_id)
 VALUES 
 ('0793162484100', 'Introduction to MySQL','2020-01-15', '1st', 39.99, 300, 'An introduction to MySQL.', 1),
@@ -7,7 +43,7 @@ VALUES
 ('5723161484103', 'Learning Python','2018-05-25', '3rd', 39.99, 450, 'Comprehensive Python programming guide.', 3),
 ('0783161484104', 'Romeo and Juliet',   '2022-07-11', '1st', 15.99, 150, 'Love story of Romeo and Juliet', 5);
 
--- 2. Author
+-- 3. Author
 INSERT INTO Author (first_name, last_name, birth_date, nationality, biography)
 VALUES
 ('Abby','Dogg','1999-05-20', 'American', 'Expert in database systems.'),
@@ -15,15 +51,6 @@ VALUES
 ('Carl','Hang','1985-12-08', 'British',  'Technical writer'),
 ('Bet', 'Sack','1990-02-28', 'Ghanaian',  'Author of Love stories'),
 ('Pei','Geng','1972-11-10', 'Chinese',  'Database performance expert.');
-
--- 3. Publisher
-INSERT INTO Publisher (name, address, phone, email, website)
-VALUES
-('Belhune Publishing', '8 Arch Ave, Indianapolis, IN', '312-416-7800', 'contact@BelhunePublishing.com', 'www.BelhunePublishing.com'),
-('Bento Books','400 Millet Blvd, New York, NY','807-624-1210', 'info@BentoBooks.com',    'www.BentoBooks.com'),
-('Cleis Press','9800 Datrod Rd, El Paso, TX', '976-313-3044', 'support@CleisPress.com', 'www.CleisPress.com'),
-('Paton Press', '11 Mallard St, Normal, IL', '309-464-5005', 'info@PatonPress.com',  'www.PatonPress.com'),
-('Epic Reads', '654 York Ln, Denton, TX','978-125-6066', 'contact@epicreads.com', 'www.epicreads.com');
 
 -- 4. Genre
 INSERT INTO Genre (name, description)
@@ -35,13 +62,13 @@ VALUES
 ('Biography',  'Life stories of notable individuals.');
 
 -- 5. Customer
-INSERT INTO Customer (first_name, last_name, email, phone, address, registration_date)
+INSERT INTO Customer (first_name, last_name, address, registration_date, contact_id)
 VALUES
-('Liz','Pott', 'Liz@gmail.com', '309-212-3003', '789 Maple St, Denton, TX', '2021-11-01'),
-('Bobby', 'Wills','bob@gmail.com', '401-522-6600', '122 Hope St, Metro, NY', '2023-01-15'),
-('Brown','Rice',   'rice@yahoo.com', '707-811-9019', '2 Pinnal St, youngtown, OH', '2024-01-20'),
-('Yu', 'Princes',  'yu@outlook.com', '800-777-0126', '300 Elmis St, New York City, NY','2025-03-05'),
-('Bimbo','Ade', 'ade@yahoo.com', '909-100-1221', '404 Oak St, Chicago, IL', '2025-03-20');
+('Liz','Pott', '789 Maple St, Denton, TX', '2021-11-01', 19),
+('Bobby', 'Wills', '122 Hope St, Metro, NY', '2023-01-15', 20),
+('Brown','Rice', '2 Pinnal St, youngtown, OH', '2024-01-20', 21),
+('Yu', 'Princes', '300 Elmis St, New York City, NY','2025-03-05', 22),
+('Bimbo','Ade', '404 Oak St, Chicago, IL', '2025-03-20', 23);
 
 -- 6. Inventory
 INSERT INTO Inventory (book_id, quantity_in_stock, last_restock_date, location_in_store)
@@ -71,16 +98,16 @@ VALUES
 (4, 4, 1, 39.99, 0.00);
 
 -- 9. Employee
-INSERT INTO Employee (first_name, last_name, position, hire_date, salary, email, phone)
+INSERT INTO Employee (first_name, last_name, position, hire_date, salary, contact_id)
 VALUES
-('Eva', 'Bogo', 'Manager', '2020-01-10', 65000.00, 'eva.bogo@goodbookstore.com', '212-353-4004'),
-('Frank','Brown','Sales Associate', '2021-06-15', 35000.00, 'frank.brown@goodbookstore.com', '212-661-7701'),
-('Bruce', 'Thomp', 'Cashier', '2022-03-01', 40000.00, 'Bruce.Thomp@goodbookstore.com', '212-205-0121'),
-('Harry', 'Disks', 'Stock Manager', '2019-11-20', 45000.00, 'henry.disks@goodbookstore.com', '212-414-2451'),
-('Isa', 'Hang', 'Customer Service', '2023-01-05', 35000.00, 'isa.hang@goodbookstore.com','212-711-8088');
+('Eva', 'Bogo', 'Manager', '2020-01-10', 65000.00, 11),
+('Frank','Brown','Sales Associate', '2021-06-15', 35000.00, 12),
+('Bruce', 'Thomp', 'Cashier', '2022-03-01', 40000.00, 13),
+('Harry', 'Disks', 'Stock Manager', '2019-11-20', 45000.00, 14),
+('Isa', 'Hang', 'Customer Service', '2023-01-05', 35000.00, 15);
 
 -- 10. Shift
-INSERT INTO Shift (employee_id, start_time, end_time, shift_date)
+INSERT INTO Shift (employee_id, start_time, end_time, date)
 VALUES
 (1, '2025-04-26 09:00:00', '2025-04-26 17:00:00', '2025-04-26'),
 (2, '2025-04-26 10:00:00', '2025-04-26 18:00:00', '2025-04-26'),
@@ -89,20 +116,20 @@ VALUES
 (5, '2025-04-28 08:00:00', '2025-04-28 16:00:00', '2025-04-28');
 
 -- 11. Store
-INSERT INTO Store (name, address, phone, email, opening_hours)
+INSERT INTO Store (name, address, opening_hours, contact_id)
 VALUES
-('Dallas Bookstore', '102 Mingo St, Dallas, TX', '978-912-0110', 'dallas@goodbookstore.com','9AM - 9PM'),
-('Denton Bookstore','200 Colorado Ln, Denton, TX','973-345-9019', 'denton@goodbookstore.com','10AM - 8PM'),
-('Plano Bookstore','301 plano road, Plano, TX','978-203-3123','plano@goodbookstore.com', '8AM - 10PM');
+('Dallas Bookstore', '102 Mingo St, Dallas, TX', '9AM - 9PM', 16),
+('Denton Bookstore','200 Colorado Ln, Denton, TX', '10AM - 8PM', 17),
+('Plano Bookstore','301 plano road, Plano, TX', '8AM - 10PM', 18);
 
 -- 12. Supplier
-INSERT INTO Supplier (name, contact_person, phone, email, lead_time_days)
+INSERT INTO Supplier (name, contact_person, lead_time_days, contact_id)
 VALUES
-('Independent Publishers Group','Lee Cook','901-212-1734', 'lee@IndependentPublishersGroup.com', 7),
-('Baker & Taylor','Henry Coke',  '800-674-5505', 'henry@BakerTaylor.com', 10),
-('Bella Distribution', 'Belle White', '404-505-6006', 'white@BellaDistribution.com', 5),
-('PrintGoods Ltd.', 'Brown Lings', '707-808-9119', 'brown@printgoods.com',14),
-('DeVorss Books', 'Oliv Davis','878-903-0600','oliv.davis@devorssbooks.com',12);
+('Independent Publishers Group','Lee Cook', 7, 6),
+('Baker & Taylor','Henry Coke', 10, 7),
+('Bella Distribution', 'Belle White', 5, 8),
+('PrintGoods Ltd.', 'Brown Lings', 14, 9),
+('DeVorss Books', 'Oliv Davis', 12, 19);
 
 -- 13. Purchase_Order
 INSERT INTO Purchase_Order (supplier_id, order_date, expected_delivery_date, status, total_amount)
@@ -155,7 +182,8 @@ VALUES
 ('Summer Sales','Get 20% off on all technology books.', 20.00, '2025-05-01', '2023-08-30'),
 ('Back to School Sales', 'Discounts for students on select books.', 10.00, '2025-08-01', '2025-09-01'),
 ('Holiday Specials', '20% off select titles for holiday season.', 20.00, '2025-01-01', '2025-01-31'),
-('Clearance', 'Up to 50% off clearance items.', 50.00, '2025-01-01', '2025-12-30');
+('Clearance', 'Up to 50% off clearance items.', 50.00, '2025-01-01', '2025-12-30'),
+('Black Friday', 'BOGO on select books for Black Friday.', 100.00, '2025-11-20', '2025-12-01');
 
 -- 19. Promotion_Book
 INSERT INTO Promotion_Book (promotion_id, book_id)
