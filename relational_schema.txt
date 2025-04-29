@@ -81,6 +81,16 @@ Order_Detail (
     discount
 )
 
+----- Store Operations -----
+
+Store (
+    store_id           PK,
+    name,
+    address,
+    opening_hours,
+    contact_id         FK -> Contact
+)
+
 Employee (
     employee_id        PK,
     first_name,
@@ -98,16 +108,6 @@ Shift (
     start_time,
     end_time,
     date
-)
-
------ Store Operations -----
-
-Store (
-    store_id           PK,
-    name,
-    address,
-    opening_hours,
-    contact_id         FK -> Contact
 )
 
 Supplier (

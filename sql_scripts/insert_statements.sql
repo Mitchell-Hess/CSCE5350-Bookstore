@@ -23,7 +23,7 @@ VALUES
 ('contact@customer2.com', '555-764-0294'),
 ('contact@customer3.com', '555-859-0129'),
 ('contact@customer4.com', '555-459-2348'),
-('contact@customer5.com', '5552-394-5834'),
+('contact@customer5.com', '5552-394-5834');
 
 -- 1. Publisher
 INSERT INTO Publisher (name, address, website, contact_id)

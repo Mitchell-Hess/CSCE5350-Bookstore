@@ -3,9 +3,9 @@ USE Bookstore;
 
 -- Core Entities
 CREATE TABLE Contact (
-    contact_id INT AUTO_INCREMENT PRIMARY KEY
+    contact_id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(100),
-    phone VARCHAR(20),
+    phone VARCHAR(20)
 );
 
 CREATE TABLE Author (
@@ -86,6 +86,16 @@ CREATE TABLE Order_Detail (
     FOREIGN KEY (book_id) REFERENCES Book(book_id)
 );
 
+-- Store Operations
+CREATE TABLE Store (
+    store_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    address TEXT,
+    opening_hours VARCHAR(100),
+    contact_id INT,
+    FOREIGN KEY (contact_id) REFERENCES Contact(contact_id)
+);
+
 CREATE TABLE Employee (
     employee_id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100),
@@ -95,7 +105,7 @@ CREATE TABLE Employee (
     salary DECIMAL(10, 2),
     store_id INT,
     contact_id INT,
-    FOREIGN KEY (store_id) REFERENCES Store(store_id)
+    FOREIGN KEY (store_id) REFERENCES Store(store_id),
     FOREIGN KEY (contact_id) REFERENCES Contact(contact_id)
 );
 
@@ -106,16 +116,6 @@ CREATE TABLE Shift (
     end_time TIME,
     date DATE,
     FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
-);
-
--- Store Operations
-CREATE TABLE Store (
-    store_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
-    address TEXT,
-    opening_hours VARCHAR(100),
-    contact_id INT,
-    FOREIGN KEY (contact_id) REFERENCES Contact(contact_id)
 );
 
 CREATE TABLE Supplier (
