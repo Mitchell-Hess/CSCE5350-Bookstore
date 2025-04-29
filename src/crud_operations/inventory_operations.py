@@ -1,5 +1,35 @@
 from db_connection import get_connection
 
+def create_publisher(name, address, website, contact_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    sql = '''INSERT INTO Publisher (name, address, website, contact_id)
+             VALUES (%s, %s, %s, %s)'''
+    cursor.execute(sql, (name, address, website, contact_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def update_publisher(publisher_id, name, address, website, contact_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    sql = '''UPDATE Publisher
+             SET name = %s, address = %s, website = %s, contact_id = %s
+             WHERE publisher_id = %s'''
+    cursor.execute(sql, (name, address, website, contact_id, publisher_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def delete_publisher(publisher_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    sql = "DELETE FROM Publisher WHERE publisher_id = %s"
+    cursor.execute(sql, (publisher_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
 def create_book(ISBN, title, publication_date, edition, price, page_count, description, publisher_id):
     conn = get_connection()
     cursor = conn.cursor()

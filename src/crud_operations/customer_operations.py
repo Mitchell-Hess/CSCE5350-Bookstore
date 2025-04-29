@@ -1,11 +1,11 @@
 from db_connection import get_connection
 
-def create_customer(first_name, last_name, email, phone, address, registration_date):
+def create_customer(first_name, last_name, address, registration_date, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
-    sql = '''INSERT INTO Customer (first_name, last_name, email, phone, address, registration_date)
-             VALUES (%s, %s, %s, %s, %s, %s)'''
-    cursor.execute(sql, (first_name, last_name, email, phone, address, registration_date))
+    sql = '''INSERT INTO Customer (first_name, last_name, address, registration_date, contact_id)
+             VALUES (%s, %s, %s, %s, %s)'''
+    cursor.execute(sql, (first_name, last_name, address, registration_date, contact_id))
     conn.commit()
     cursor.close()
     conn.close()
@@ -20,13 +20,13 @@ def read_customer(customer_id):
     conn.close()
     return result
 
-def update_customer(customer_id, first_name, last_name, email, phone, address):
+def update_customer(customer_id, first_name, last_name, address, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
     sql = '''UPDATE Customer
-             SET first_name = %s, last_name = %s, email = %s, phone = %s, address = %s
+             SET first_name = %s, last_name = %s, address = %s, contact_id = %s
              WHERE customer_id = %s'''
-    cursor.execute(sql, (first_name, last_name, email, phone, address, customer_id))
+    cursor.execute(sql, (first_name, last_name, address, contact_id, customer_id))
     conn.commit()
     cursor.close()
     conn.close()

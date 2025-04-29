@@ -1,11 +1,11 @@
 from db_connection import get_connection
 
-def create_employee(first_name, last_name, position, hire_date, salary, email, phone):
+def create_employee(first_name, last_name, position, hire_date, salary, store_id, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
-    sql = '''INSERT INTO Employee (first_name, last_name, position, hire_date, salary, email, phone)
-             VALUES (%s, %s, %s, %s, %s, %s, %s)'''
-    cursor.execute(sql, (first_name, last_name, position, hire_date, salary, email, phone))
+    sql = '''INSERT INTO Employee (first_name, last_name, position, hire_date, salary, store_id, contact_id)
+             VALUES (%s, %s, %s, %s, %s, %s)'''
+    cursor.execute(sql, (first_name, last_name, position, hire_date, salary, store_id, contact_id))
     conn.commit()
     cursor.close()
     conn.close()
@@ -20,13 +20,13 @@ def read_employee(employee_id):
     conn.close()
     return result
 
-def update_employee(employee_id, first_name, last_name, position, hire_date, salary, email, phone):
+def update_employee(employee_id, first_name, last_name, position, hire_date, salary, store_id, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
     sql = '''UPDATE Employee
-             SET first_name = %s, last_name = %s, position = %s, hire_date = %s, salary = %s, email = %s, phone = %s
+             SET first_name = %s, last_name = %s, position = %s, hire_date = %s, salary = %s, store_id = %s, contact_id = %s
              WHERE employee_id = %s'''
-    cursor.execute(sql, (first_name, last_name, position, hire_date, salary, email, phone, employee_id))
+    cursor.execute(sql, (first_name, last_name, position, hire_date, salary, store_id, contact_id, employee_id))
     conn.commit()
     cursor.close()
     conn.close()

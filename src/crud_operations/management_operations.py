@@ -1,11 +1,11 @@
 from db_connection import get_connection
 
-def create_store(name, address, phone, email, opening_hours):
+def create_store(name, address, opening_hours, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
-    sql = '''INSERT INTO Store (name, address, phone, email, opening_hours)
-             VALUES (%s, %s, %s, %s, %s)'''
-    cursor.execute(sql, (name, address, phone, email, opening_hours))
+    sql = '''INSERT INTO Store (name, address, opening_hours, contact_id)
+             VALUES (%s, %s, %s, %s)'''
+    cursor.execute(sql, (name, address, opening_hours, contact_id))
     conn.commit()
     cursor.close()
     conn.close()
@@ -20,13 +20,13 @@ def read_store(store_id):
     conn.close()
     return result
 
-def update_store(store_id, name, address, phone, email, opening_hours):
+def update_store(store_id, name, address, opening_hours, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
     sql = '''UPDATE Store
-             SET name = %s, address = %s, phone = %s, email = %s, opening_hours = %s
+             SET name = %s, address = %s, opening_hours = %s, contact_id
              WHERE store_id = %s'''
-    cursor.execute(sql, (name, address, phone, email, opening_hours, store_id))
+    cursor.execute(sql, (name, address, opening_hours, contact_id, store_id))
     conn.commit()
     cursor.close()
     conn.close()
@@ -40,12 +40,12 @@ def delete_store(store_id):
     cursor.close()
     conn.close()
 
-def create_supplier(name, contact_person, phone, email, lead_time_days):
+def create_supplier(name, contact_person, lead_time_days, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
-    sql = '''INSERT INTO Supplier (name, contact_person, phone, email, lead_time_days)
-             VALUES (%s, %s, %s, %s, %s)'''
-    cursor.execute(sql, (name, contact_person, phone, email, lead_time_days))
+    sql = '''INSERT INTO Supplier (name, contact_person, lead_time_days, contact_id)
+             VALUES (%s, %s, %s, %s)'''
+    cursor.execute(sql, (name, contact_person, lead_time_days, contact_id))
     conn.commit()
     cursor.close()
     conn.close()
@@ -60,13 +60,13 @@ def read_supplier(supplier_id):
     conn.close()
     return result
 
-def update_supplier(supplier_id, name, contact_person, phone, email, lead_time_days):
+def update_supplier(supplier_id, name, contact_person, lead_time_days, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
     sql = '''UPDATE Supplier
-             SET name = %s, contact_person = %s, phone = %s, email = %s, lead_time_days = %s
+             SET name = %s, contact_person = %s, lead_time_days = %s, contact_id
              WHERE supplier_id = %s'''
-    cursor.execute(sql, (name, contact_person, phone, email, lead_time_days, supplier_id))
+    cursor.execute(sql, (name, contact_person, lead_time_days, contact_id, supplier_id))
     conn.commit()
     cursor.close()
     conn.close()
