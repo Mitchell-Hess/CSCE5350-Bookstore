@@ -10,6 +10,7 @@ from crud_operations.management_operations import *
 from crud_operations.promotion_operations import *
 from crud_operations.purchase_order_operations import *
 from crud_operations.review_operations import *
+from crud_operations.membership_operations import grant_membership_to_customer, customer_exists
 
 class BookstoreApp(tk.Tk):
     def __init__(self):
@@ -106,12 +107,10 @@ class BookstoreApp(tk.Tk):
         add_tab = ttk.Frame(inventory_notebook)
         manage_books_tab = ttk.Frame(inventory_notebook)
         restock_tab = ttk.Frame(inventory_notebook)
-        manage_inventory_tab = ttk.Frame(inventory_notebook)
 
         inventory_notebook.add(add_tab, text="Add Book to Database")
         inventory_notebook.add(manage_books_tab, text="Manage Book Database")
         inventory_notebook.add(restock_tab, text="Stock/Restock Book")
-        inventory_notebook.add(manage_inventory_tab, text="Manage Inventory")
 
         inventory_notebook.pack(expand=1, fill="both")
 
@@ -162,10 +161,9 @@ class BookstoreApp(tk.Tk):
             entry.pack(side=tk.LEFT)
             self.inventory_entries[field] = entry
 
-        #TODO: Add add book to inventory function
         tk.Button(restock_tab, text="Add Book", command=self.add_book_to_inventory).pack(pady=20)
 
-        # Manage Inventory Tab
+        '''# Manage Inventory Tab
         tk.Label(manage_inventory_tab, text="Search by Title, Author, or ISBN").pack(pady=10)
         self.inventory_search_entry = tk.Entry(manage_inventory_tab, width=50)
         self.inventory_search_entry.pack(pady=5)
@@ -178,7 +176,7 @@ class BookstoreApp(tk.Tk):
 
         #TODO: Add update and remove book functions
         tk.Button(manage_inventory_tab, text="Update Book", command=self.update_inventory_entry).pack(pady=5)
-        tk.Button(manage_inventory_tab, text="Remove Book", command=self.remove_book_from_inventory).pack(pady=5)
+        tk.Button(manage_inventory_tab, text="Remove Book", command=self.remove_book_from_inventory).pack(pady=5)'''
 
     def create_employees_tab(self):
         employees_notebook = ttk.Notebook(self.employees_tab)
@@ -206,7 +204,14 @@ class BookstoreApp(tk.Tk):
         self.customer_id_entry.pack(pady=5)
 
         #TODO: Add grant membership function
-        #tk.Button(membership_tab, text="Grant Membership", command=self.grant_membership).pack(pady=20)
+        
+        tk.Label(membership_tab, text="Membership Type:").pack(pady=5)
+        self.membership_type_var = tk.StringVar(membership_tab)
+        self.membership_type_var.set("Basic")
+        tk.OptionMenu(membership_tab, self.membership_type_var, "Basic", "Premium").pack(pady=5)
+
+        tk.Button(membership_tab, text="Grant Membership", command=self.grant_membership).pack(pady=20)
+#tk.Button(membership_tab, text="Grant Membership", command=self.grant_membership).pack(pady=20)
 
     def create_management_tab(self):
         management_notebook = ttk.Notebook(self.management_tab)
@@ -524,7 +529,24 @@ class BookstoreApp(tk.Tk):
 
     # --------- Employees Tab Helper Functions ----------
 
-    #TODO
+    def grant_membership(self):
+        customer_id = self.customer_id_entry.get().strip()
+        membership_type = self.membership_type_var.get()
+
+        if not customer_id.isdigit():
+            messagebox.showerror("Input Error", "Customer ID must be numeric.")
+            return
+
+        try:
+            from crud_operations.customer_operations import grant_membership_to_customer, customer_exists
+            if not customer_exists(int(customer_id)):
+                messagebox.showerror("Invalid ID", "Customer ID does not exist.")
+                return
+
+            grant_membership_to_customer(int(customer_id), membership_type)
+            messagebox.showinfo("Success", f"{membership_type} membership granted to customer ID {customer_id}.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     # --------- Management Tab Helper Functions ----------
 
@@ -661,6 +683,23 @@ class BookstoreApp(tk.Tk):
         except Exception as e:
             messagebox.showerror("Deletion Error", str(e))
 
+    def grant_membership(self):
+        customer_id = self.customer_id_entry.get().strip()
+        membership_type = self.membership_type_var.get()
+
+        if not customer_id.isdigit():
+            messagebox.showerror("Input Error", "Customer ID must be numeric.")
+            return
+
+        try:
+            if not customer_exists(int(customer_id)):
+                messagebox.showerror("Invalid ID", "Customer ID does not exist.")
+                return
+
+            grant_membership_to_customer(int(customer_id), membership_type)
+            messagebox.showinfo("Success", f"{membership_type} membership granted to customer ID {customer_id}.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
 if __name__ == "__main__":
     app = BookstoreApp()
