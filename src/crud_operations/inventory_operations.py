@@ -105,13 +105,13 @@ def find_author_id(first_name, last_name):
 def find_publisher_id(publisher_name):
     conn = get_connection()
     cursor = conn.cursor()
-    sql = "SELECT publisher_id FROM publisher WHERE publisher_name = %s"
-    cursor.execute(sql, (publisher_name))
-    author_id = cursor.fetchone()[0]
+    sql = "SELECT publisher_id FROM publisher WHERE name = %s"
+    cursor.execute(sql, (publisher_name,))
+    publisher_id = cursor.fetchone()[0]
     conn.commit()
     cursor.close()
     conn.close()
-    return author_id
+    return publisher_id
 
 def create_inventory_entry(book_id, quantity_in_stock, last_restock_date, location_in_store):
     conn = get_connection()

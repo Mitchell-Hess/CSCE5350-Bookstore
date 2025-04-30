@@ -62,7 +62,7 @@ CREATE TABLE Inventory (
     quantity_in_stock INT,
     last_restock_date DATE,
     location_in_store VARCHAR(100),
-    FOREIGN KEY (book_id) REFERENCES Book(book_id)
+    FOREIGN KEY (book_id) REFERENCES Book(book_id) ON DELETE CASCADE
 );
 
 CREATE TABLE `Order` (
@@ -83,7 +83,7 @@ CREATE TABLE Order_Detail (
     unit_price DECIMAL(10, 2),
     discount DECIMAL(5, 2),
     FOREIGN KEY (order_id) REFERENCES `Order`(order_id),
-    FOREIGN KEY (book_id) REFERENCES Book(book_id)
+    FOREIGN KEY (book_id) REFERENCES Book(book_id) ON DELETE CASCADE
 );
 
 -- Store Operations
@@ -144,7 +144,7 @@ CREATE TABLE Purchase_Order_Detail (
     quantity INT,
     unit_cost DECIMAL(10, 2),
     FOREIGN KEY (po_id) REFERENCES Purchase_Order(po_id),
-    FOREIGN KEY (book_id) REFERENCES Book(book_id)
+    FOREIGN KEY (book_id) REFERENCES Book(book_id) ON DELETE CASCADE
 );
 
 -- Additional Features
@@ -155,7 +155,7 @@ CREATE TABLE Review (
     rating INT CHECK (rating BETWEEN 1 AND 5),
     comment TEXT,
     review_date DATE,
-    FOREIGN KEY (book_id) REFERENCES Book(book_id),
+    FOREIGN KEY (book_id) REFERENCES Book(book_id) ON DELETE CASCADE,
     FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
 );
 
@@ -164,7 +164,7 @@ CREATE TABLE Book_Author (
     author_id INT,
     role VARCHAR(100),
     PRIMARY KEY (book_id, author_id),
-    FOREIGN KEY (book_id) REFERENCES Book(book_id),
+    FOREIGN KEY (book_id) REFERENCES Book(book_id) ON DELETE CASCADE,
     FOREIGN KEY (author_id) REFERENCES Author(author_id)
 );
 
@@ -172,7 +172,7 @@ CREATE TABLE Book_Genre (
     book_id INT,
     genre_id INT,
     PRIMARY KEY (book_id, genre_id),
-    FOREIGN KEY (book_id) REFERENCES Book(book_id),
+    FOREIGN KEY (book_id) REFERENCES Book(book_id) ON DELETE CASCADE,
     FOREIGN KEY (genre_id) REFERENCES Genre(genre_id)
 );
 
@@ -190,7 +190,7 @@ CREATE TABLE Promotion_Book (
     book_id INT,
     PRIMARY KEY (promotion_id, book_id),
     FOREIGN KEY (promotion_id) REFERENCES Promotion(promotion_id),
-    FOREIGN KEY (book_id) REFERENCES Book(book_id)
+    FOREIGN KEY (book_id) REFERENCES Book(book_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Membership (

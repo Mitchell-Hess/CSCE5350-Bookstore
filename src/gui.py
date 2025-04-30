@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from decimal import Decimal
 
 from crud_operations.contact_operations import *
 from crud_operations.customer_operations import *
@@ -10,6 +11,7 @@ from crud_operations.management_operations import *
 from crud_operations.promotion_operations import *
 from crud_operations.purchase_order_operations import *
 from crud_operations.review_operations import *
+from crud_operations.membership_operations import grant_membership_to_customer, customer_exists
 
 class BookstoreApp(tk.Tk):
     def __init__(self):
@@ -37,6 +39,9 @@ class BookstoreApp(tk.Tk):
         self.create_inventory_tab()
         self.create_employees_tab()
         self.create_management_tab()
+        self.cart = []
+        self.manage_book_mapping = {}
+        self.search_book_mapping = {}
 
     def create_customer_tab(self):
         customer_notebook = ttk.Notebook(self.customer_tab)
@@ -57,11 +62,15 @@ class BookstoreApp(tk.Tk):
         self.search_entry = tk.Entry(search_tab, width=50)
         self.search_entry.pack(pady=5)
 
-        #TODO: Add search books function
-        #tk.Button(search_tab, text="Search", command=self.search_books).pack(pady=5)
+        tk.Button(search_tab, text="Search", command=self.search_store_books).pack(pady=5)
         
-        self.search_results = tk.Listbox(search_tab, width=100, height=20)
+        self.search_results = tk.Text(search_tab, width=100, height=20)
         self.search_results.pack(pady=10)
+
+        self.selected_index_entry = tk.Entry(search_tab, width=10)
+        self.selected_index_entry.pack(pady=5)
+
+        tk.Button(search_tab, text="Add Selected to Cart", command=self.add_to_cart).pack(pady=5)
 
         #TODO: Add add to cart function
         #tk.Button(search_tab, text="Add to Cart", command=self.add_to_cart).pack(pady=5)
@@ -71,7 +80,7 @@ class BookstoreApp(tk.Tk):
         self.cart_list.pack(pady=20)
 
         #TODO: Add remove from cart function
-        #tk.Button(cart_tab, text="Remove Selected", command=self.remove_from_cart).pack(pady=5)
+        tk.Button(cart_tab, text="Remove Selected", command=self.remove_from_cart).pack(pady=5)
 
         # Checkout Tab
         tk.Label(checkout_tab, text="Name for Membership Discount:").pack(pady=5)
@@ -82,8 +91,16 @@ class BookstoreApp(tk.Tk):
         self.membership_id_entry = tk.Entry(checkout_tab)
         self.membership_id_entry.pack(pady=5)
 
+        tk.Label(checkout_tab, text="Total:").pack(pady=5)
+        self.total_label = tk.Label(checkout_tab, text="$0.00")
+        self.total_label.pack()
+
+        tk.Label(checkout_tab, text="With Membership Discount:").pack(pady=5)
+        self.discounted_total_label = tk.Label(checkout_tab, text="$0.00")
+        self.discounted_total_label.pack()
+
         #TODO: Add purchase book function
-        #tk.Button(checkout_tab, text="Purchase", command=self.purchase_books).pack(pady=20)
+        tk.Button(checkout_tab, text="Purchase", command=self.purchase_books).pack(pady=20)
 
     def create_inventory_tab(self):
         inventory_notebook = ttk.Notebook(self.inventory_tab)
@@ -91,12 +108,10 @@ class BookstoreApp(tk.Tk):
         add_tab = ttk.Frame(inventory_notebook)
         manage_books_tab = ttk.Frame(inventory_notebook)
         restock_tab = ttk.Frame(inventory_notebook)
-        manage_inventory_tab = ttk.Frame(inventory_notebook)
 
         inventory_notebook.add(add_tab, text="Add Book to Database")
         inventory_notebook.add(manage_books_tab, text="Manage Book Database")
         inventory_notebook.add(restock_tab, text="Stock/Restock Book")
-        inventory_notebook.add(manage_inventory_tab, text="Manage Inventory")
 
         inventory_notebook.pack(expand=1, fill="both")
 
@@ -120,18 +135,18 @@ class BookstoreApp(tk.Tk):
 
         # Manage Book Database Tab
         tk.Label(manage_books_tab, text="Search by Title, Author, or ISBN").pack(pady=10)
-        self.inventory_search_entry = tk.Entry(manage_books_tab, width=50)
-        self.inventory_search_entry.pack(pady=5)
+        self.manage_inventory_search_entry = tk.Entry(manage_books_tab, width=50)
+        self.manage_inventory_search_entry.pack(pady=5)
 
-        #TODO: Add search inventory function
-        tk.Button(manage_books_tab, text="Search", command=self.search_book_list).pack(pady=5)
+        tk.Button(manage_books_tab, text="Search", command=self.search_store_books_for_management).pack(pady=5)
 
-        self.inventory_results = tk.Listbox(manage_books_tab, width=100, height=20)
-        self.inventory_results.pack(pady=10)
+        self.manage_inventory_listbox = tk.Listbox(manage_books_tab, width=100, height=20)
+        self.manage_inventory_listbox.pack(pady=10)
+
+        tk.Button(manage_books_tab, text="Remove Selected Book", command=self.remove_selected_book_from_inventory).pack(pady=5)
 
         #TODO: Add update and remove book functions
         tk.Button(manage_books_tab, text="Update Book", command=self.update_book_info).pack(pady=5)
-        tk.Button(manage_books_tab, text="Remove Book", command=self.remove_book_from_book_list).pack(pady=5)
 
         # Add inventory tab
         tk.Label(restock_tab, text="Stock/Restock a Book").pack(pady=10)
@@ -147,10 +162,9 @@ class BookstoreApp(tk.Tk):
             entry.pack(side=tk.LEFT)
             self.inventory_entries[field] = entry
 
-        #TODO: Add add book to inventory function
         tk.Button(restock_tab, text="Add Book", command=self.add_book_to_inventory).pack(pady=20)
 
-        # Manage Inventory Tab
+        '''# Manage Inventory Tab
         tk.Label(manage_inventory_tab, text="Search by Title, Author, or ISBN").pack(pady=10)
         self.inventory_search_entry = tk.Entry(manage_inventory_tab, width=50)
         self.inventory_search_entry.pack(pady=5)
@@ -163,7 +177,7 @@ class BookstoreApp(tk.Tk):
 
         #TODO: Add update and remove book functions
         tk.Button(manage_inventory_tab, text="Update Book", command=self.update_inventory_entry).pack(pady=5)
-        tk.Button(manage_inventory_tab, text="Remove Book", command=self.remove_book_from_inventory).pack(pady=5)
+        tk.Button(manage_inventory_tab, text="Remove Book", command=self.remove_book_from_inventory).pack(pady=5)'''
 
     def create_employees_tab(self):
         employees_notebook = ttk.Notebook(self.employees_tab)
@@ -191,7 +205,14 @@ class BookstoreApp(tk.Tk):
         self.customer_id_entry.pack(pady=5)
 
         #TODO: Add grant membership function
-        #tk.Button(membership_tab, text="Grant Membership", command=self.grant_membership).pack(pady=20)
+        
+        tk.Label(membership_tab, text="Membership Type:").pack(pady=5)
+        self.membership_type_var = tk.StringVar(membership_tab)
+        self.membership_type_var.set("Basic")
+        tk.OptionMenu(membership_tab, self.membership_type_var, "Basic", "Premium").pack(pady=5)
+
+        tk.Button(membership_tab, text="Grant Membership", command=self.grant_membership).pack(pady=20)
+#tk.Button(membership_tab, text="Grant Membership", command=self.grant_membership).pack(pady=20)
 
     def create_management_tab(self):
         management_notebook = ttk.Notebook(self.management_tab)
@@ -274,13 +295,70 @@ class BookstoreApp(tk.Tk):
     # --------- Customer Tab Helper Functions ----------
 
     # TODO
+    def search_store_books(self):
+        criteria = self.search_entry.get().strip()
+        results = ""
+
+        if not criteria:
+            self.search_results.insert(tk.END, "Please enter search criteria")
+            return
+            
+            
+        author_results = search_books_by_author(criteria) or []
+        title_results = search_books_by_title(criteria) or []
+        genre_results = search_books_by_genre(criteria) or []
+        isbn_result = search_books_by_isbn(criteria) or []
+
+        combined_results = author_results + title_results + genre_results
+        if isbn_result:
+            combined_results.append(isbn_result)
+
+        # Deduplicate based on book_id (assuming it's at index 0)
+        unique_books = {}
+        for book in combined_results:
+            isbn = book[0]  # adjust index if needed
+            unique_books[isbn] = book
+
+        self.search_results.delete("1.0", tk.END)
+
+        if unique_books:
+            self.search_results.delete("1.0", tk.END)
+            self.search_book_mapping.clear()
+            for idx, book in enumerate(unique_books.values(), start=1):
+                book_id = book[0]
+                isbn = book[1]
+                title = book[2]
+                pub_date = book[3]
+                edition = book[4]
+                price = float(book[5])
+                page_count = book[6]
+                desc = book[7]
+                publisher_id = book[8]
+
+                authors = get_authors_by_book_id(book_id)
+                author_names = ", ".join(authors) if authors else "Unknown Author"
+
+                publisher_name = get_publisher_name(publisher_id) or "Unknown Publisher"
+
+                display_text = (
+                    f"[{idx}] {title} ({edition} edition, {pub_date})\n"
+                    f"Author(s): {author_names}\n"
+                    f"Publisher: {publisher_name}\n"
+                    f"ISBN: {isbn} | {page_count} pages | ${price:.2f}\n"
+                    f"{desc}\n"
+                    "----------------------------\n"
+                )
+                self.search_results.insert(tk.END, display_text)
+                self.search_book_mapping[idx] = book
+        else:
+            self.search_results.insert(tk.END, "No results found.")
 
     # --------- Inventory Tab Helper Functions ----------
 
     def add_book_to_book_list(self):
         # Get user input
         author_name = self.book_entries["Author"].get()
-        publisher_name = self.book_entries["Publisher"]  # Placeholder; ideally selected from a dropdown
+        publisher_name = self.book_entries["Publisher"].get()  # Placeholder; ideally selected from a dropdown
         ISBN = self.book_entries["ISBN"].get()
         title = self.book_entries["Title"].get()
         publication_date = self.book_entries["Publication Date"].get()
@@ -289,17 +367,19 @@ class BookstoreApp(tk.Tk):
         page_count = int(self.book_entries["Page Count"].get())
         description = self.book_entries["Description"].get()
 
+        publisher_id = None
+        author_id = None
+
         try:
             publisher_id = find_publisher_id(publisher_name)
             book_id = create_book(ISBN, title, publication_date, edition, price, page_count, description, publisher_id)
-            print("book id: ", book_id)
             author_first_name, author_last_name = author_name.split()
             author_id = find_author_id(author_first_name, author_last_name)
-            print("author id: ", author_id)
             create_book_author(book_id, author_id, "primary author")
             messagebox.showinfo("Success", "Book added successfully.")
         except Exception as err:
-            messagebox.showerror("Database Error", str(err))
+            messagebox.showerror(str(err), "Database Error. Please make sure that the author name and publisher name aldready exist in the system.")
+            print(err)
 
     def search_book_list(self):
         query = self.inventory_search_entry.get().strip()
@@ -452,12 +532,178 @@ class BookstoreApp(tk.Tk):
 
     # --------- Employees Tab Helper Functions ----------
 
-    #TODO
+    def grant_membership(self):
+        customer_id = self.customer_id_entry.get().strip()
+        membership_type = self.membership_type_var.get()
+
+        if not customer_id.isdigit():
+            messagebox.showerror("Input Error", "Customer ID must be numeric.")
+            return
+
+        try:
+            from crud_operations.customer_operations import grant_membership_to_customer, customer_exists
+            if not customer_exists(int(customer_id)):
+                messagebox.showerror("Invalid ID", "Customer ID does not exist.")
+                return
+
+            grant_membership_to_customer(int(customer_id), membership_type)
+            messagebox.showinfo("Success", f"{membership_type} membership granted to customer ID {customer_id}.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     # --------- Management Tab Helper Functions ----------
 
     #TODO
 
+    def add_to_cart(self):
+        try:
+            index = int(self.selected_index_entry.get())
+            book = self.search_book_mapping.get(index)
+            if not book:
+                messagebox.showwarning("Invalid Selection", "No book at that number.")
+                return
+            self.cart.append(book)
+            self.refresh_cart_list()
+            messagebox.showinfo("Added", f"'{book[2]}' added to cart.")
+        except ValueError:
+            messagebox.showwarning("Input Error", "Please enter a valid book number.")
+
+    def refresh_cart_list(self):
+        self.cart_list.delete(0, tk.END)
+        total = 0.0
+        for book in self.cart:
+            price = float(book[5])
+            self.cart_list.insert(tk.END, f"{book[2]} - ${price:.2f}")
+            total += price
+
+        # Update totals in checkout tab if labels exist
+        if hasattr(self, "total_label"):
+            self.total_label.config(text=f"${total:.2f}")
+        if hasattr(self, "discounted_total_label"):
+            discounted = total * 0.9  # 10% off
+            self.discounted_total_label.config(text=f"${discounted:.2f}")
+
+    def remove_from_cart(self):
+        try:
+            selection_index = self.cart_list.curselection()
+            if not selection_index:
+                messagebox.showwarning("Selection Error", "Please select an item to remove.")
+                return
+            idx = selection_index[0]
+            removed_book = self.cart.pop(idx)
+            self.refresh_cart_list()
+            messagebox.showinfo("Removed", f"Removed '{removed_book[2]}' from cart.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    def purchase_books(self):
+        if not self.cart:
+            messagebox.showwarning("Cart Empty", "Your cart is empty.")
+            return
+
+        try:
+            # Get membership info (optional)
+            name = self.name_entry.get().strip()
+            membership_id = self.membership_id_entry.get().strip()
+            has_discount = bool(membership_id)
+
+            customer_id = 1  # Placeholder for testing purposes
+            order_date = "2025-04-30"  # Placeholder; normally use datetime
+            status = "Pending"
+            payment_method = "Credit Card"  # Placeholder
+
+            total_amount = sum(float(book[5]) for book in self.cart)
+            order_id = create_order(customer_id, order_date, total_amount, status, payment_method)
+
+            for book in self.cart:
+                add_book_to_order(order_id, book[0], 1, float(book[5]), 0.0)
+
+            if has_discount:
+                apply_membership_discount(order_id, Decimal("10"))
+                
+
+            complete_order(order_id)
+            self.cart.clear()
+            self.refresh_cart_list()
+            messagebox.showinfo("Success", f"Purchase complete. Order ID: {order_id}")
+
+        except Exception as e:
+            messagebox.showerror("Checkout Error", str(e))
+
+
+    def search_store_books_for_management(self):
+        criteria = self.manage_inventory_search_entry.get().strip()
+        if not criteria:
+            messagebox.showwarning("Input Error", "Please enter search criteria.")
+            return
+
+        author_results = search_books_by_author(criteria) or []
+        title_results = search_books_by_title(criteria) or []
+        genre_results = search_books_by_genre(criteria) or []
+        isbn_result = search_books_by_isbn(criteria) or []
+
+        combined_results = author_results + title_results + genre_results
+        if isbn_result:
+            combined_results.append(isbn_result)
+
+        unique_books = {}
+        for book in combined_results:
+            isbn = book[0]
+            unique_books[isbn] = book
+
+        self.manage_book_mapping.clear()
+        self.manage_inventory_listbox.delete(0, tk.END)
+
+        for idx, book in enumerate(unique_books.values(), start=1):
+            book_id = book[0]
+            title = book[2]
+            self.manage_book_mapping[idx - 1] = book  # Listbox uses 0-based index
+            self.manage_inventory_listbox.insert(tk.END, f"[{book_id}] {title}")
+
+    def remove_selected_book_from_inventory(self):
+        selection = self.manage_inventory_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("Selection Error", "Please select a book to remove.")
+            return
+
+        index = selection[0]
+        book = self.manage_book_mapping.get(index)
+        if not book:
+            messagebox.showerror("Error", "Unable to locate selected book.")
+            return
+
+        book_id = book[0]
+
+        try:
+            authors = get_authors_by_book_id(book_id)
+            for author in authors:
+                first_name, last_name = author.split(" ", 1)
+                author_id = find_author_id(first_name, last_name)
+                delete_book_author(book_id, author_id)
+
+            delete_book(book_id)
+            self.manage_inventory_listbox.delete(index)
+            messagebox.showinfo("Deleted", f"Book ID {book_id} and associated authors removed.")
+        except Exception as e:
+            messagebox.showerror("Deletion Error", str(e))
+
+    def grant_membership(self):
+        customer_id = self.customer_id_entry.get().strip()
+        membership_type = self.membership_type_var.get()
+
+        if not customer_id.isdigit():
+            messagebox.showerror("Input Error", "Customer ID must be numeric.")
+            return
+
+        try:
+            if not customer_exists(int(customer_id)):
+                messagebox.showerror("Invalid ID", "Customer ID does not exist.")
+                return
+
+            grant_membership_to_customer(int(customer_id), membership_type)
+            messagebox.showinfo("Success", f"{membership_type} membership granted to customer ID {customer_id}.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
 if __name__ == "__main__":
     app = BookstoreApp()
