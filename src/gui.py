@@ -371,17 +371,19 @@ class BookstoreApp(tk.Tk):
         page_count = int(self.book_entries["Page Count"].get())
         description = self.book_entries["Description"].get()
 
+        publisher_id = None
+        author_id = None
+
         try:
             publisher_id = find_publisher_id(publisher_name)
             book_id = create_book(ISBN, title, publication_date, edition, price, page_count, description, publisher_id)
-            print("book id: ", book_id)
             author_first_name, author_last_name = author_name.split()
             author_id = find_author_id(author_first_name, author_last_name)
-            print("author id: ", author_id)
             create_book_author(book_id, author_id, "primary author")
             messagebox.showinfo("Success", "Book added successfully.")
         except Exception as err:
-            messagebox.showerror("Database Error", str(err))
+            messagebox.showerror(str(err), "Database Error. Please make sure that the author name and publisher name aldready exist in the system.")
+            print(err)
 
     def search_book_list(self):
         query = self.inventory_search_entry.get().strip()
