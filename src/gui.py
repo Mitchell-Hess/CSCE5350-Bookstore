@@ -37,6 +37,8 @@ class BookstoreApp(tk.Tk):
         self.create_inventory_tab()
         self.create_employees_tab()
         self.create_management_tab()
+        self.cart = []
+        self.search_book_mapping = {}
 
     def create_customer_tab(self):
         customer_notebook = ttk.Notebook(self.customer_tab)
@@ -62,6 +64,11 @@ class BookstoreApp(tk.Tk):
         self.search_results = tk.Text(search_tab, width=100, height=20)
         self.search_results.pack(pady=10)
 
+        self.selected_index_entry = tk.Entry(search_tab, width=10)
+        self.selected_index_entry.pack(pady=5)
+
+        tk.Button(search_tab, text="Add Selected to Cart", command=self.add_to_cart).pack(pady=5)
+
         #TODO: Add add to cart function
         #tk.Button(search_tab, text="Add to Cart", command=self.add_to_cart).pack(pady=5)
 
@@ -70,7 +77,7 @@ class BookstoreApp(tk.Tk):
         self.cart_list.pack(pady=20)
 
         #TODO: Add remove from cart function
-        #tk.Button(cart_tab, text="Remove Selected", command=self.remove_from_cart).pack(pady=5)
+        tk.Button(cart_tab, text="Remove Selected", command=self.remove_from_cart).pack(pady=5)
 
         # Checkout Tab
         tk.Label(checkout_tab, text="Name for Membership Discount:").pack(pady=5)
@@ -81,8 +88,16 @@ class BookstoreApp(tk.Tk):
         self.membership_id_entry = tk.Entry(checkout_tab)
         self.membership_id_entry.pack(pady=5)
 
+        tk.Label(checkout_tab, text="Total:").pack(pady=5)
+        self.total_label = tk.Label(checkout_tab, text="$0.00")
+        self.total_label.pack()
+
+        tk.Label(checkout_tab, text="With Membership Discount:").pack(pady=5)
+        self.discounted_total_label = tk.Label(checkout_tab, text="$0.00")
+        self.discounted_total_label.pack()
+
         #TODO: Add purchase book function
-        #tk.Button(checkout_tab, text="Purchase", command=self.purchase_books).pack(pady=20)
+        tk.Button(checkout_tab, text="Purchase", command=self.purchase_books).pack(pady=20)
 
     def create_inventory_tab(self):
         inventory_notebook = ttk.Notebook(self.inventory_tab)
@@ -300,7 +315,9 @@ class BookstoreApp(tk.Tk):
         self.search_results.delete("1.0", tk.END)
 
         if unique_books:
-            for book in unique_books.values():
+            self.search_results.delete("1.0", tk.END)
+            self.search_book_mapping.clear()
+            for idx, book in enumerate(unique_books.values(), start=1):
                 book_id = book[0]
                 isbn = book[1]
                 title = book[2]
@@ -317,7 +334,7 @@ class BookstoreApp(tk.Tk):
                 publisher_name = get_publisher_name(publisher_id) or "Unknown Publisher"
 
                 display_text = (
-                    f"{title} ({edition} edition, {pub_date})\n"
+                    f"[{idx}] {title} ({edition} edition, {pub_date})\n"
                     f"Author(s): {author_names}\n"
                     f"Publisher: {publisher_name}\n"
                     f"ISBN: {isbn} | {page_count} pages | ${price:.2f}\n"
@@ -325,6 +342,7 @@ class BookstoreApp(tk.Tk):
                     "----------------------------\n"
                 )
                 self.search_results.insert(tk.END, display_text)
+                self.search_book_mapping[idx] = book
         else:
             self.search_results.insert(tk.END, "No results found.")
 
@@ -510,6 +528,80 @@ class BookstoreApp(tk.Tk):
     # --------- Management Tab Helper Functions ----------
 
     #TODO
+
+    def add_to_cart(self):
+        try:
+            index = int(self.selected_index_entry.get())
+            book = self.search_book_mapping.get(index)
+            if not book:
+                messagebox.showwarning("Invalid Selection", "No book at that number.")
+                return
+            self.cart.append(book)
+            self.refresh_cart_list()
+            messagebox.showinfo("Added", f"'{book[2]}' added to cart.")
+        except ValueError:
+            messagebox.showwarning("Input Error", "Please enter a valid book number.")
+
+    def refresh_cart_list(self):
+        self.cart_list.delete(0, tk.END)
+        total = 0.0
+        for book in self.cart:
+            price = float(book[5])
+            self.cart_list.insert(tk.END, f"{book[2]} - ${price:.2f}")
+            total += price
+
+        # Update totals in checkout tab if labels exist
+        if hasattr(self, "total_label"):
+            self.total_label.config(text=f"${total:.2f}")
+        if hasattr(self, "discounted_total_label"):
+            discounted = total * 0.9  # 10% off
+            self.discounted_total_label.config(text=f"${discounted:.2f}")
+
+    def remove_from_cart(self):
+        try:
+            selection_index = self.cart_list.curselection()
+            if not selection_index:
+                messagebox.showwarning("Selection Error", "Please select an item to remove.")
+                return
+            idx = selection_index[0]
+            removed_book = self.cart.pop(idx)
+            self.refresh_cart_list()
+            messagebox.showinfo("Removed", f"Removed '{removed_book[2]}' from cart.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    def purchase_books(self):
+        if not self.cart:
+            messagebox.showwarning("Cart Empty", "Your cart is empty.")
+            return
+
+        try:
+            # Get membership info (optional)
+            name = self.name_entry.get().strip()
+            membership_id = self.membership_id_entry.get().strip()
+            has_discount = bool(membership_id)
+
+            customer_id = 1  # Placeholder for testing purposes
+            order_date = "2025-04-30"  # Placeholder; normally use datetime
+            status = "Pending"
+            payment_method = "Credit Card"  # Placeholder
+
+            total_amount = sum(float(book[5]) for book in self.cart)
+            order_id = create_order(customer_id, order_date, total_amount, status, payment_method)
+
+            for book in self.cart:
+                add_book_to_order(order_id, book[0], 1, float(book[5]), 0.0)
+
+            if has_discount:
+                apply_membership_discount(order_id, 10)  # 10% discount
+
+            complete_order(order_id)
+            self.cart.clear()
+            self.refresh_cart_list()
+            messagebox.showinfo("Success", f"Purchase complete. Order ID: {order_id}")
+
+        except Exception as e:
+            messagebox.showerror("Checkout Error", str(e))
 
 
 if __name__ == "__main__":
