@@ -38,6 +38,7 @@ class BookstoreApp(tk.Tk):
         self.create_employees_tab()
         self.create_management_tab()
         self.cart = []
+        self.manage_book_mapping = {}
         self.search_book_mapping = {}
 
     def create_customer_tab(self):
@@ -134,18 +135,18 @@ class BookstoreApp(tk.Tk):
 
         # Manage Book Database Tab
         tk.Label(manage_books_tab, text="Search by Title, Author, or ISBN").pack(pady=10)
-        self.inventory_search_entry = tk.Entry(manage_books_tab, width=50)
-        self.inventory_search_entry.pack(pady=5)
+        self.manage_inventory_search_entry = tk.Entry(manage_books_tab, width=50)
+        self.manage_inventory_search_entry.pack(pady=5)
 
-        #TODO: Add search inventory function
-        tk.Button(manage_books_tab, text="Search", command=self.search_book_list).pack(pady=5)
+        tk.Button(manage_books_tab, text="Search", command=self.search_store_books_for_management).pack(pady=5)
 
-        self.inventory_results = tk.Listbox(manage_books_tab, width=100, height=20)
-        self.inventory_results.pack(pady=10)
+        self.manage_inventory_listbox = tk.Listbox(manage_books_tab, width=100, height=20)
+        self.manage_inventory_listbox.pack(pady=10)
+
+        tk.Button(manage_books_tab, text="Remove Selected Book", command=self.remove_selected_book_from_inventory).pack(pady=5)
 
         #TODO: Add update and remove book functions
         tk.Button(manage_books_tab, text="Update Book", command=self.update_book_info).pack(pady=5)
-        tk.Button(manage_books_tab, text="Remove Book", command=self.remove_book_from_book_list).pack(pady=5)
 
         # Add inventory tab
         tk.Label(restock_tab, text="Stock/Restock a Book").pack(pady=10)
@@ -602,6 +603,63 @@ class BookstoreApp(tk.Tk):
 
         except Exception as e:
             messagebox.showerror("Checkout Error", str(e))
+
+
+    def search_store_books_for_management(self):
+        criteria = self.manage_inventory_search_entry.get().strip()
+        if not criteria:
+            messagebox.showwarning("Input Error", "Please enter search criteria.")
+            return
+
+        author_results = search_books_by_author(criteria) or []
+        title_results = search_books_by_title(criteria) or []
+        genre_results = search_books_by_genre(criteria) or []
+        isbn_result = search_books_by_isbn(criteria) or []
+
+        combined_results = author_results + title_results + genre_results
+        if isbn_result:
+            combined_results.append(isbn_result)
+
+        unique_books = {}
+        for book in combined_results:
+            isbn = book[0]
+            unique_books[isbn] = book
+
+        self.manage_book_mapping.clear()
+        self.manage_inventory_listbox.delete(0, tk.END)
+
+        for idx, book in enumerate(unique_books.values(), start=1):
+            book_id = book[0]
+            title = book[2]
+            self.manage_book_mapping[idx - 1] = book  # Listbox uses 0-based index
+            self.manage_inventory_listbox.insert(tk.END, f"[{book_id}] {title}")
+
+    def remove_selected_book_from_inventory(self):
+        selection = self.manage_inventory_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("Selection Error", "Please select a book to remove.")
+            return
+
+        index = selection[0]
+        book = self.manage_book_mapping.get(index)
+        if not book:
+            messagebox.showerror("Error", "Unable to locate selected book.")
+            return
+
+        book_id = book[0]
+
+        try:
+            authors = get_authors_by_book_id(book_id)
+            for author in authors:
+                first_name, last_name = author.split(" ", 1)
+                author_id = find_author_id(first_name, last_name)
+                delete_book_author(book_id, author_id)
+
+            delete_book(book_id)
+            self.manage_inventory_listbox.delete(index)
+            messagebox.showinfo("Deleted", f"Book ID {book_id} and associated authors removed.")
+        except Exception as e:
+            messagebox.showerror("Deletion Error", str(e))
 
 
 if __name__ == "__main__":
