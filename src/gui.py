@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from decimal import Decimal
 
 from crud_operations.contact_operations import *
 from crud_operations.customer_operations import *
@@ -616,7 +617,8 @@ class BookstoreApp(tk.Tk):
                 add_book_to_order(order_id, book[0], 1, float(book[5]), 0.0)
 
             if has_discount:
-                apply_membership_discount(order_id, 10)  # 10% discount
+                apply_membership_discount(order_id, Decimal("10"))
+                
 
             complete_order(order_id)
             self.cart.clear()
