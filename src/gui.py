@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from decimal import Decimal
+from crud_operations.employee_operations import clock_in_employee, clock_out_employee
+import datetime
+
 
 from crud_operations.contact_operations import *
 from crud_operations.customer_operations import *
@@ -196,8 +199,9 @@ class BookstoreApp(tk.Tk):
         self.shift_employee_id_entry.pack(pady=5)
         
         #TODO: add check in/out functions
-        #tk.Button(shift_tab, text="Check In", command=self.check_in_shift).pack(pady=20)
-        #tk.Button(shift_tab, text="Check Out", command=self.check_out_shift).pack(pady=20)
+        tk.Button(shift_tab, text="Check In", command=self.check_in_shift).pack(pady=20)
+        tk.Button(shift_tab, text="Check Out", command=self.check_out_shift).pack(pady=20)
+
 
         # Membership Tab
         tk.Label(membership_tab, text="Customer ID:").pack(pady=5)
@@ -619,7 +623,6 @@ class BookstoreApp(tk.Tk):
             if has_discount:
                 apply_membership_discount(order_id, Decimal("10"))
                 
-
             complete_order(order_id)
             self.cart.clear()
             self.refresh_cart_list()
@@ -702,6 +705,33 @@ class BookstoreApp(tk.Tk):
             messagebox.showinfo("Success", f"{membership_type} membership granted to customer ID {customer_id}.")
         except Exception as e:
             messagebox.showerror("Error", str(e))
+    def check_in_shift(self):
+        emp_id = self.shift_employee_id_entry.get().strip()
+        if not emp_id.isdigit():
+            messagebox.showerror("Input Error", "Employee ID must be numeric.")
+            return
+        try:
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            clock_in_employee(int(emp_id), now)
+            messagebox.showinfo("Success", f"Employee ID {emp_id} clocked in at {now}.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+    def check_out_shift(self):
+        emp_id = self.shift_employee_id_entry.get().strip()
+        if not emp_id.isdigit():
+            messagebox.showerror("Input Error", "Employee ID must be numeric.")
+            return
+        try:
+            updated =clock_out_employee(int(emp_id))
+            if updated:
+                messagebox.showinfo("Success", f"Employee ID {emp_id} clocked out.")
+            else:
+                messagebox.showwarning("Warning", f"Employee ID {emp_id} is not clocked in.")
+    
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            
+
 
 if __name__ == "__main__":
     app = BookstoreApp()
