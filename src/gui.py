@@ -57,7 +57,6 @@ class BookstoreApp(tk.Tk):
         self.search_entry = tk.Entry(search_tab, width=50)
         self.search_entry.pack(pady=5)
 
-        #TODO: Add search books function
         tk.Button(search_tab, text="Search", command=self.search_store_books).pack(pady=5)
         
         self.search_results = tk.Text(search_tab, width=100, height=20)
@@ -312,11 +311,18 @@ class BookstoreApp(tk.Tk):
                 desc = book[7]
                 publisher_id = book[8]
 
+                authors = get_authors_by_book_id(book_id)
+                author_names = ", ".join(authors) if authors else "Unknown Author"
+
+                publisher_name = get_publisher_name(publisher_id) or "Unknown Publisher"
+
                 display_text = (
                     f"{title} ({edition} edition, {pub_date})\n"
+                    f"Author(s): {author_names}\n"
+                    f"Publisher: {publisher_name}\n"
                     f"ISBN: {isbn} | {page_count} pages | ${price:.2f}\n"
                     f"{desc}\n"
-                    "----------------------------"
+                    "----------------------------\n"
                 )
                 self.search_results.insert(tk.END, display_text)
         else:
@@ -327,7 +333,7 @@ class BookstoreApp(tk.Tk):
     def add_book_to_book_list(self):
         # Get user input
         author_name = self.book_entries["Author"].get()
-        publisher_name = self.book_entries["Publisher"]  # Placeholder; ideally selected from a dropdown
+        publisher_name = self.book_entries["Publisher"].get()  # Placeholder; ideally selected from a dropdown
         ISBN = self.book_entries["ISBN"].get()
         title = self.book_entries["Title"].get()
         publication_date = self.book_entries["Publication Date"].get()

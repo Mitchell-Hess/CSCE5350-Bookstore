@@ -181,3 +181,27 @@ def apply_membership_discount(order_id, discount_percentage):
         conn.commit()
     cursor.close()
     conn.close()
+
+def get_authors_by_book_id(book_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = """
+        SELECT a.first_name, a.last_name
+        FROM author a
+        JOIN book_author ba ON a.author_id = ba.author_id
+        WHERE ba.book_id = %s
+    """
+    cursor.execute(query, (book_id,))
+    authors = [f"{row[0]} {row[1]}" for row in cursor.fetchall()]
+    cursor.close()
+    conn.close()
+    return authors
+
+def get_publisher_name(publisher_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM publisher WHERE publisher_id = %s", (publisher_id,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return row[0] if row else None
