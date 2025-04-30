@@ -58,9 +58,9 @@ class BookstoreApp(tk.Tk):
         self.search_entry.pack(pady=5)
 
         #TODO: Add search books function
-        #tk.Button(search_tab, text="Search", command=self.search_books).pack(pady=5)
+        tk.Button(search_tab, text="Search", command=self.search_store_books).pack(pady=5)
         
-        self.search_results = tk.Listbox(search_tab, width=100, height=20)
+        self.search_results = tk.Text(search_tab, width=100, height=20)
         self.search_results.pack(pady=10)
 
         #TODO: Add add to cart function
@@ -274,6 +274,53 @@ class BookstoreApp(tk.Tk):
     # --------- Customer Tab Helper Functions ----------
 
     # TODO
+    def search_store_books(self):
+        criteria = self.search_entry.get().strip()
+        results = ""
+
+        if not criteria:
+            self.search_results.insert(tk.END, "Please enter search criteria")
+            return
+            
+            
+        author_results = search_books_by_author(criteria) or []
+        title_results = search_books_by_title(criteria) or []
+        genre_results = search_books_by_genre(criteria) or []
+        isbn_result = search_books_by_isbn(criteria) or []
+
+        combined_results = author_results + title_results + genre_results
+        if isbn_result:
+            combined_results.append(isbn_result)
+
+        # Deduplicate based on book_id (assuming it's at index 0)
+        unique_books = {}
+        for book in combined_results:
+            isbn = book[0]  # adjust index if needed
+            unique_books[isbn] = book
+
+        self.search_results.delete("1.0", tk.END)
+
+        if unique_books:
+            for book in unique_books.values():
+                book_id = book[0]
+                isbn = book[1]
+                title = book[2]
+                pub_date = book[3]
+                edition = book[4]
+                price = float(book[5])
+                page_count = book[6]
+                desc = book[7]
+                publisher_id = book[8]
+
+                display_text = (
+                    f"{title} ({edition} edition, {pub_date})\n"
+                    f"ISBN: {isbn} | {page_count} pages | ${price:.2f}\n"
+                    f"{desc}\n"
+                    "----------------------------"
+                )
+                self.search_results.insert(tk.END, display_text)
+        else:
+            self.search_results.insert(tk.END, "No results found.")
 
     # --------- Inventory Tab Helper Functions ----------
 
