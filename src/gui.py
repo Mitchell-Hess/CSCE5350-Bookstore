@@ -1,10 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from decimal import Decimal
-from crud_operations.employee_operations import clock_in_employee, clock_out_employee
-import datetime
-
 
 from crud_operations.contact_operations import *
 from crud_operations.customer_operations import *
@@ -46,10 +42,11 @@ class BookstoreApp(tk.Tk):
         self.manage_book_mapping = {}
         self.search_book_mapping = {}
 
+
     def create_customer_tab(self):
         customer_notebook = ttk.Notebook(self.customer_tab)
 
-        # Subtabs
+        #Subtabs
         search_tab = ttk.Frame(customer_notebook)
         cart_tab = ttk.Frame(customer_notebook)
         checkout_tab = ttk.Frame(customer_notebook)
@@ -199,9 +196,8 @@ class BookstoreApp(tk.Tk):
         self.shift_employee_id_entry.pack(pady=5)
         
         #TODO: add check in/out functions
-        tk.Button(shift_tab, text="Check In", command=self.check_in_shift).pack(pady=20)
-        tk.Button(shift_tab, text="Check Out", command=self.check_out_shift).pack(pady=20)
-
+        #tk.Button(shift_tab, text="Check In", command=self.check_in_shift).pack(pady=20)
+        #tk.Button(shift_tab, text="Check Out", command=self.check_out_shift).pack(pady=20)
 
         # Membership Tab
         tk.Label(membership_tab, text="Customer ID:").pack(pady=5)
@@ -218,71 +214,253 @@ class BookstoreApp(tk.Tk):
         tk.Button(membership_tab, text="Grant Membership", command=self.grant_membership).pack(pady=20)
 #tk.Button(membership_tab, text="Grant Membership", command=self.grant_membership).pack(pady=20)
 
+
     def create_management_tab(self):
-        management_notebook = ttk.Notebook(self.management_tab)
+        management_nb = ttk.Notebook(self.management_tab)
 
-        store_tab = ttk.Frame(management_notebook)
-        employee_tab = ttk.Frame(management_notebook)
-        supplier_tab = ttk.Frame(management_notebook)
+        # --- Store Management ---
+        store_tab = ttk.Frame(management_nb)
+        management_nb.add(store_tab, text="Store Management")
+        store_nb = ttk.Notebook(store_tab)
+        list_store, add_store, upd_store = (ttk.Frame(store_nb) for _ in range(3))
+        store_nb.add(list_store, text="Store List")
+        store_nb.add(add_store, text="Add Store")
+        store_nb.add(upd_store, text="Update/Remove Store")
+        store_nb.pack(expand=1, fill="both", pady=10)
 
-        management_notebook.add(store_tab, text="Store Management")
-        management_notebook.add(employee_tab, text="Employee Management")
-        management_notebook.add(supplier_tab, text="Supplier Management")
+        # Store List
+        self.store_text = tk.Text(list_store, width=80, height=20)
+        self.store_text.pack(padx=10, pady=10)
+        self.load_stores()
 
-        management_notebook.pack(expand=1, fill="both")
+        # Add Store form (name, address, opening_hours, contact_id)
+        fields = ["Name", "Address", "Opening Hours", "Contact ID"]
+        self.store_add_entries = {}
+        for fld in fields:
+            frm = tk.Frame(add_store);
+            frm.pack(pady=5)
+            tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
+            ent = tk.Entry(frm, width=50);
+            ent.pack(side=tk.LEFT)
+            self.store_add_entries[fld] = ent
+        tk.Button(add_store, text="Add Store", command=self.add_store).pack(pady=10)
 
-        # Store Tab
-        fields = ["Store ID", "Name", "Address", "Phone", "Email", "Opening Hours"]
-        self.store_entries = {}
+        # Update/Remove Store form
+        fields_upd = ["Store ID"] + fields
+        self.store_update_entries = {}
+        for fld in fields_upd:
+            frm = tk.Frame(upd_store);
+            frm.pack(pady=5)
+            tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
+            ent = tk.Entry(frm, width=50);
+            ent.pack(side=tk.LEFT)
+            self.store_update_entries[fld] = ent
+        tk.Button(upd_store, text="Update Store", command=self.edit_store).pack(pady=10)
+        tk.Button(upd_store, text="Remove Store", command=self.remove_store).pack(pady=5)
 
-        for field in fields:
-            frame = tk.Frame(store_tab)
-            frame.pack(pady=5)
-            tk.Label(frame, text=field).pack(side=tk.LEFT, padx=10)
-            entry = tk.Entry(frame, width=50)
-            entry.pack(side=tk.LEFT)
-            self.store_entries[field] = entry
+        # --- Employee Management ---
+        emp_tab = ttk.Frame(management_nb)
+        management_nb.add(emp_tab, text="Employee Management")
+        emp_nb = ttk.Notebook(emp_tab)
+        list_emp, add_emp, upd_emp = (ttk.Frame(emp_nb) for _ in range(3))
+        emp_nb.add(list_emp, text="Employee List")
+        emp_nb.add(add_emp, text="Add Employee")
+        emp_nb.add(upd_emp, text="Update/Remove Employee")
+        emp_nb.pack(expand=1, fill="both", pady=10)
 
-        #TODO: Add add store button
-        #tk.Button(store_tab, text="Add Store", command=self.add_store).pack(pady=20)
+        # Employee List
+        self.employee_text = tk.Text(list_emp, width=80, height=20)
+        self.employee_text.pack(padx=10, pady=10)
+        self.load_employees()
 
-        # Employee Tab
-        fields = ["Employee ID", "First Name", "Last Name", "Position", "Hire Date", "Salary", "Email", "Phone"]
-        self.employee_entries = {}
+        # Add Employee form (first_name, last_name, position, hire_date, salary, contact_id)
+        emp_fields = ["First Name", "Last Name", "Position", "Hire Date", "Salary", "Store ID", "Contact ID"]
+        self.employee_add_entries = {}
+        for fld in emp_fields:
+            frm = tk.Frame(add_emp);
+            frm.pack(pady=5)
+            tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
+            ent = tk.Entry(frm, width=50);
+            ent.pack(side=tk.LEFT)
+            self.employee_add_entries[fld] = ent
+        tk.Button(add_emp, text="Add Employee", command=self.add_employee).pack(pady=10)
 
-        for field in fields:
-            frame = tk.Frame(employee_tab)
-            frame.pack(pady=5)
-            tk.Label(frame, text=field).pack(side=tk.LEFT, padx=10)
-            entry = tk.Entry(frame, width=50)
-            entry.pack(side=tk.LEFT)
-            self.employee_entries[field] = entry
+        # Update/Remove Employee form
+        upd_emp_fields = ["Employee ID"] + emp_fields
+        self.employee_update_entries = {}
+        for fld in upd_emp_fields:
+            frm = tk.Frame(upd_emp);
+            frm.pack(pady=5)
+            tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
+            ent = tk.Entry(frm, width=50);
+            ent.pack(side=tk.LEFT)
+            self.employee_update_entries[fld] = ent
+        tk.Button(upd_emp, text="Update Employee", command=self.edit_employee).pack(pady=10)
+        tk.Button(upd_emp, text="Remove Employee", command=self.remove_employee).pack(pady=5)
 
-        #TODO: Add add employee function
-        #tk.Button(employee_tab, text="Add Employee", command=self.add_employee).pack(pady=20)
+        # --- Supplier Management ---
+        sup_tab = ttk.Frame(management_nb)
+        management_nb.add(sup_tab, text="Supplier Management")
+        sup_nb = ttk.Notebook(sup_tab)
+        list_sup, add_sup, upd_sup = (ttk.Frame(sup_nb) for _ in range(3))
+        sup_nb.add(list_sup, text="Supplier List")
+        sup_nb.add(add_sup, text="Add Supplier")
+        sup_nb.add(upd_sup, text="Update/Remove Supplier")
+        sup_nb.pack(expand=1, fill="both", pady=10)
 
-        #TODO: Add employee functions
-        # tk.Button(employee_tab, text="Edit Employee", command=self.edit_employee).pack(pady=5)
-        # tk.Button(employee_tab, text="Remove Employee", command=self.remove_employee).pack(pady=5)
-        # tk.Button(employee_tab, text="Schedule Shift", command=self.schedule_shift).pack(pady=5)
+        # Supplier List
+        self.supplier_text = tk.Text(list_sup, width=80, height=20)
+        self.supplier_text.pack(padx=10, pady=10)
+        self.load_suppliers()
 
-        # Supplier Tab
-        fields = ["Supplier ID", "Name", "Contact Person", "Phone", "Email", "Lead Time Delays"]
-        self.supplier_entries = {}
+        # Add Supplier form (name, contact_person, lead_time_days, contact_id)
+        sup_fields = ["Name", "Contact Person", "Lead Time Days", "Contact ID"]
+        self.supplier_add_entries = {}
+        for fld in sup_fields:
+            frm = tk.Frame(add_sup);
+            frm.pack(pady=5)
+            tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
+            ent = tk.Entry(frm, width=50);
+            ent.pack(side=tk.LEFT)
+            self.supplier_add_entries[fld] = ent
+        tk.Button(add_sup, text="Add Supplier", command=self.add_supplier).pack(pady=10)
 
-        for field in fields:
-            frame = tk.Frame(supplier_tab)
-            frame.pack(pady=5)
-            tk.Label(frame, text=field).pack(side=tk.LEFT, padx=10)
-            entry = tk.Entry(frame, width=50)
-            entry.pack(side=tk.LEFT)
-            self.supplier_entries[field] = entry
+        # Update/Remove Supplier form
+        upd_sup_fields = ["Supplier ID"] + sup_fields
+        self.supplier_update_entries = {}
+        for fld in upd_sup_fields:
+            frm = tk.Frame(upd_sup);
+            frm.pack(pady=5)
+            tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
+            ent = tk.Entry(frm, width=50);
+            ent.pack(side=tk.LEFT)
+            self.supplier_update_entries[fld] = ent
+        tk.Button(upd_sup, text="Update Supplier", command=self.edit_supplier).pack(pady=10)
+        tk.Button(upd_sup, text="Remove Supplier", command=self.remove_supplier).pack(pady=5)
 
+        management_nb.pack(expand=1, fill="both")
 
-        #TODO: Add supplier functions
-        #tk.Button(supplier_tab, text="Add Supplier", command=self.add_supplier).pack(pady=20)
-        #tk.Button(supplier_tab, text="Edit Supplier", command=self.edit_supplier).pack(pady=5)
-        #tk.Button(supplier_tab, text="Remove Supplier", command=self.remove_supplier).pack(pady=5)
+    def load_stores(self):
+        self.store_text.configure(state="normal")
+        self.store_text.delete("1.0", tk.END)
+        for sid, name, address, opening_hours, contact_id in get_all_stores():
+            self.store_text.insert(
+                tk.END,
+                f"[{sid}] {name}\n"
+                f"Address: {address}\n"
+                f"Opening Hours: {opening_hours}\n"
+                f"Contact ID: {contact_id}\n\n"
+            )
+        self.store_text.configure(state="disabled")
+
+    def add_store(self):
+        name = self.store_add_entries["Name"].get()
+        address = self.store_add_entries["Address"].get()
+        hours = self.store_add_entries["Opening Hours"].get()
+        cid = int(self.store_add_entries["Contact ID"].get())
+        create_store(name, address, hours, cid)
+        messagebox.showinfo("Success", "Store added successfully.")
+        self.load_stores()
+
+    def edit_store(self):
+        sid = int(self.store_update_entries["Store ID"].get())
+        name = self.store_update_entries["Name"].get()
+        address = self.store_update_entries["Address"].get()
+        hours = self.store_update_entries["Opening Hours"].get()
+        cid = int(self.store_update_entries["Contact ID"].get())
+        update_store(sid, name, address, hours, cid)
+        messagebox.showinfo("Success", "Store updated successfully.")
+        self.load_stores()
+
+    def remove_store(self):
+        sid = int(self.store_update_entries["Store ID"].get())
+        delete_store(sid)
+        messagebox.showinfo("Success", "Store removed successfully.")
+        self.load_stores()
+
+    def load_employees(self):
+        self.employee_text.configure(state="normal")
+        self.employee_text.delete("1.0", tk.END)
+        for eid, first, last, pos, hire, sal, stor, cid in get_all_employees():
+            self.employee_text.insert(
+                tk.END,
+                f"[{eid}] {first} {last}\n"
+                f"Position: {pos}\n"
+                f"Hire Date: {hire}\n"
+                f"Salary: {sal}\n"
+                f"Store ID: {stor}\n\n"
+                f"Contact ID: {cid}\n\n"
+            )
+        self.employee_text.configure(state="disabled")
+
+    def add_employee(self):
+        first = self.employee_add_entries["First Name"].get()
+        last = self.employee_add_entries["Last Name"].get()
+        pos = self.employee_add_entries["Position"].get()
+        hire = self.employee_add_entries["Hire Date"].get()
+        sal = float(self.employee_add_entries["Salary"].get())
+        stor = int(self.employee_add_entries["Store ID"].get())
+        cid = int(self.employee_add_entries["Contact ID"].get())
+        create_employee(first, last, pos, hire, sal,stor, cid)
+        messagebox.showinfo("Success", "Employee added successfully.")
+        self.load_employees()
+
+    def edit_employee(self):
+        eid = int(self.employee_update_entries["Employee ID"].get())
+        first = self.employee_update_entries["First Name"].get()
+        last = self.employee_update_entries["Last Name"].get()
+        pos = self.employee_update_entries["Position"].get()
+        hire = self.employee_update_entries["Hire Date"].get()
+        sal = float(self.employee_update_entries["Salary"].get())
+        stor = int(self.employee_add_entries["Store ID"].get())
+        cid = int(self.employee_update_entries["Contact ID"].get())
+        update_employee(eid, first, last, pos, hire, sal, stor, cid)
+        messagebox.showinfo("Success", "Employee updated successfully.")
+        self.load_employees()
+
+    def remove_employee(self):
+        eid = int(self.employee_update_entries["Employee ID"].get())
+        delete_employee(eid)
+        messagebox.showinfo("Success", "Employee removed successfully.")
+        self.load_employees()
+
+    def load_suppliers(self):
+        self.supplier_text.configure(state="normal")
+        self.supplier_text.delete("1.0", tk.END)
+        for sid, name, cp, ltd, cid in get_all_suppliers():
+            self.supplier_text.insert(
+                tk.END,
+                f"[{sid}] {name}\n"
+                f"Contact Person: {cp}\n"
+                f"Lead Time Days: {ltd}\n"
+                f"Contact ID: {cid}\n\n"
+            )
+        self.supplier_text.configure(state="disabled")
+
+    def add_supplier(self):
+        name = self.supplier_add_entries["Name"].get()
+        cp = self.supplier_add_entries["Contact Person"].get()
+        ltd = int(self.supplier_add_entries["Lead Time Days"].get())
+        cid = int(self.supplier_add_entries["Contact ID"].get())
+        create_supplier(name, cp, ltd, cid)
+        messagebox.showinfo("Success", "Supplier added successfully.")
+        self.load_suppliers()
+
+    def edit_supplier(self):
+        sid = int(self.supplier_update_entries["Supplier ID"].get())
+        name = self.supplier_update_entries["Name"].get()
+        cp = self.supplier_update_entries["Contact Person"].get()
+        ltd = int(self.supplier_update_entries["Lead Time Days"].get())
+        cid = int(self.supplier_update_entries["Contact ID"].get())
+        update_supplier(sid, name, cp, ltd, cid)
+        messagebox.showinfo("Success", "Supplier updated successfully.")
+        self.load_suppliers()
+
+    def remove_supplier(self):
+        sid = int(self.supplier_update_entries["Supplier ID"].get())
+        delete_supplier(sid)
+        messagebox.showinfo("Success", "Supplier removed successfully.")
+        self.load_suppliers()
 
     def search_books(self):
         query = self.search_entry.get()
@@ -371,19 +549,17 @@ class BookstoreApp(tk.Tk):
         page_count = int(self.book_entries["Page Count"].get())
         description = self.book_entries["Description"].get()
 
-        publisher_id = None
-        author_id = None
-
         try:
             publisher_id = find_publisher_id(publisher_name)
             book_id = create_book(ISBN, title, publication_date, edition, price, page_count, description, publisher_id)
+            print("book id: ", book_id)
             author_first_name, author_last_name = author_name.split()
             author_id = find_author_id(author_first_name, author_last_name)
+            print("author id: ", author_id)
             create_book_author(book_id, author_id, "primary author")
             messagebox.showinfo("Success", "Book added successfully.")
         except Exception as err:
-            messagebox.showerror(str(err), "Database Error. Please make sure that the author name and publisher name aldready exist in the system.")
-            print(err)
+            messagebox.showerror("Database Error", str(err))
 
     def search_book_list(self):
         query = self.inventory_search_entry.get().strip()
@@ -623,8 +799,8 @@ class BookstoreApp(tk.Tk):
                 add_book_to_order(order_id, book[0], 1, float(book[5]), 0.0)
 
             if has_discount:
-                apply_membership_discount(order_id, Decimal("10"))
-                
+                apply_membership_discount(order_id, 10)  # 10% discount
+
             complete_order(order_id)
             self.cart.clear()
             self.refresh_cart_list()
@@ -707,34 +883,8 @@ class BookstoreApp(tk.Tk):
             messagebox.showinfo("Success", f"{membership_type} membership granted to customer ID {customer_id}.")
         except Exception as e:
             messagebox.showerror("Error", str(e))
-    def check_in_shift(self):
-        emp_id = self.shift_employee_id_entry.get().strip()
-        if not emp_id.isdigit():
-            messagebox.showerror("Input Error", "Employee ID must be numeric.")
-            return
-        try:
-            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            clock_in_employee(int(emp_id), now)
-            messagebox.showinfo("Success", f"Employee ID {emp_id} clocked in at {now}.")
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
-    def check_out_shift(self):
-        emp_id = self.shift_employee_id_entry.get().strip()
-        if not emp_id.isdigit():
-            messagebox.showerror("Input Error", "Employee ID must be numeric.")
-            return
-        try:
-            updated =clock_out_employee(int(emp_id))
-            if updated:
-                messagebox.showinfo("Success", f"Employee ID {emp_id} clocked out.")
-            else:
-                messagebox.showwarning("Warning", f"Employee ID {emp_id} is not clocked in.")
-    
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
-            
-
 
 if __name__ == "__main__":
     app = BookstoreApp()
     app.mainloop()
+

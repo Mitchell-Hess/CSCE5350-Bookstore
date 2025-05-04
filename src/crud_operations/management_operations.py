@@ -1,5 +1,16 @@
 from db_connection import get_connection
 
+def get_all_stores():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT store_id, name, address, opening_hours, contact_id FROM Store"
+    )
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows
+
 def create_store(name, address, opening_hours, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
@@ -40,6 +51,7 @@ def delete_store(store_id):
     cursor.close()
     conn.close()
 
+#### Suppliers
 def create_supplier(name, contact_person, lead_time_days, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
@@ -64,7 +76,7 @@ def update_supplier(supplier_id, name, contact_person, lead_time_days, contact_i
     conn = get_connection()
     cursor = conn.cursor()
     sql = '''UPDATE Supplier
-             SET name = %s, contact_person = %s, lead_time_days = %s, contact_id
+             SET name = %s, contact_person = %s, lead_time_days = %s, contact_id = %s
              WHERE supplier_id = %s'''
     cursor.execute(sql, (name, contact_person, lead_time_days, contact_id, supplier_id))
     conn.commit()
@@ -79,3 +91,13 @@ def delete_supplier(supplier_id):
     conn.commit()
     cursor.close()
     conn.close()
+
+
+def get_all_suppliers():
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT supplier_id, name,contact_person, lead_time_days, contact_id FROM Supplier")
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        return rows
