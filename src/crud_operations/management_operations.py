@@ -51,7 +51,6 @@ def delete_store(store_id):
     cursor.close()
     conn.close()
 
-#### Suppliers
 def create_supplier(name, contact_person, lead_time_days, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
