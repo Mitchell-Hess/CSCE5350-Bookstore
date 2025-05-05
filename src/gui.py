@@ -2,6 +2,13 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
+from db_connection import get_connection
+
+# Prompt for database login and test connection
+conn = get_connection()
+if not conn:
+    raise SystemExit("Database connection failed. Please restart and try again.")
+
 from crud_operations.contact_operations import *
 from crud_operations.customer_operations import *
 from crud_operations.employee_operations import *

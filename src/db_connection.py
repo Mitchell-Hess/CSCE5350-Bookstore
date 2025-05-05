@@ -7,15 +7,20 @@ import json
 config = "db_config.txt"
 
 def prompt_for_login():
-    """Pop up a single login window and return DB credentials."""
+    """Pop up a single login window and return DB credentials, or None if cancelled."""
     creds = {}
+    result = {"submitted": False}
 
     def submit():
-        creds["host"] = host_entry.get().strip()
-        creds["user"] = user_entry.get().strip()
-        creds["password"] = password_entry.get().strip()
-        creds["database"] = database_entry.get().strip()
-        login_win.destroy()
+        if all(e.get().strip() for e in (host_entry, user_entry, password_entry, database_entry)):
+            creds["host"] = host_entry.get().strip()
+            creds["user"] = user_entry.get().strip()
+            creds["password"] = password_entry.get().strip()
+            creds["database"] = database_entry.get().strip()
+            result["submitted"] = True
+            login_win.destroy()
+        else:
+            messagebox.showerror("Input Error", "All fields are required.")
 
     login_win = tk.Tk()
     login_win.title("Database Login")
@@ -39,9 +44,11 @@ def prompt_for_login():
 
     tk.Button(login_win, text="Connect", command=submit).grid(row=4, column=0, columnspan=2, pady=15)
 
+    login_win.protocol("WM_DELETE_WINDOW", login_win.destroy)  # Handle window close
     login_win.mainloop()
 
-    return creds if creds else None
+    return creds if result["submitted"] else None
+
 
 def save_credentials(config_info):
     # Save the credentials
@@ -59,20 +66,21 @@ def get_connection():
     """Establish connection to MySQL Database using stored or prompted credentials."""
     config_info = load_credentials()
 
-    if not config_info:
-        config_info = prompt_for_login()
+    while True:
+        if not config_info:
+            config_info = prompt_for_login()
 
-    try:
-        conn = mysql.connector.connect(
-            host=config_info["host"],
-            user=config_info["user"],
-            password=config_info["password"],
-            database=config_info["database"]
-        )
-        # Save config only after a successful connection
-        if not os.path.exists(config):
-            save_credentials(config_info)
-        return conn
-    except mysql.connector.Error as err:
-        messagebox.showerror("Database Error", f"Error: {err}")
-        return None
+        try:
+            conn = mysql.connector.connect(
+                host=config_info["host"],
+                user=config_info["user"],
+                password=config_info["password"],
+                database=config_info["database"]
+            )
+            # Save credentials if valid and not yet stored
+            if not os.path.exists(config):
+                save_credentials(config_info)
+            return conn
+        except mysql.connector.Error as err:
+            messagebox.showerror("Database Error", f"Connection failed:\n{err}\n\nPlease try again.")
+            config_info = None  # Clear and re-prompt
