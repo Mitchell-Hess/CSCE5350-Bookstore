@@ -1,5 +1,17 @@
 from db_connection import get_connection
 
+def get_all_books():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT book_id, ISBN, title, publication_date, edition, price, page_count, description, publisher_id
+        FROM Book
+    ''')
+    results = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return results
+
 def create_publisher(name, address, website, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
