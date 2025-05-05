@@ -202,3 +202,11 @@ CREATE TABLE Membership (
     points_balance INT,
     FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
 );
+
+CREATE TABLE employee_shifts (
+    shift_id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    clock_in_time DATETIME,
+    clock_out_time DATETIME,
+    FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
+);
