@@ -6,6 +6,13 @@ from crud_operations.employee_operations import clock_in_employee, clock_out_emp
 import datetime
 
 
+from db_connection import get_connection
+
+# Prompt for database login and test connection
+conn = get_connection()
+if not conn:
+    raise SystemExit("Database connection failed. Please restart and try again.")
+
 from crud_operations.contact_operations import *
 from crud_operations.customer_operations import *
 from crud_operations.employee_operations import *
