@@ -19,6 +19,7 @@ from crud_operations.membership_operations import grant_membership_to_customer, 
 class BookstoreApp(tk.Tk):
     def __init__(self):
         super().__init__()
+        self.manage_book_mapping = {}
         self.title("Bookstore Management System")
         self.geometry("1000x700")
 
@@ -37,6 +38,8 @@ class BookstoreApp(tk.Tk):
         tab_control.add(self.management_tab, text="Management")
 
         tab_control.pack(expand=1, fill="both")
+
+        tab_control.bind("<<NotebookTabChanged>>", self.on_tab_changed)
 
         self.create_customer_tab()
         self.create_inventory_tab()
@@ -60,10 +63,13 @@ class BookstoreApp(tk.Tk):
 
         customer_notebook.pack(expand=1, fill="both")
 
+        self.search_tab_frame = search_tab
+
         # Search Tab
         tk.Label(search_tab, text="Search by Title, Author, ISBN, or Genre").pack(pady=10)
         self.search_entry = tk.Entry(search_tab, width=50)
         self.search_entry.pack(pady=5)
+
 
         tk.Button(search_tab, text="Search", command=self.search_store_books).pack(pady=5)
         
@@ -114,9 +120,11 @@ class BookstoreApp(tk.Tk):
 
         inventory_notebook.add(add_tab, text="Add Book to Database")
         inventory_notebook.add(manage_books_tab, text="Manage Book Database")
+        manage_books_tab = manage_books_tab
         inventory_notebook.add(restock_tab, text="Stock/Restock Book")
 
         inventory_notebook.pack(expand=1, fill="both")
+        inventory_notebook.bind("<<NotebookTabChanged>>", self.on_inventory_tab_changed)
 
         # Add Book Tab
         tk.Label(add_tab, text="Insert a Book into Database").pack(pady=10)
@@ -145,10 +153,10 @@ class BookstoreApp(tk.Tk):
 
         self.manage_inventory_listbox = tk.Listbox(manage_books_tab, width=100, height=20)
         self.manage_inventory_listbox.pack(pady=10)
+        self.populate_manage_books_with_all()
 
         tk.Button(manage_books_tab, text="Remove Selected Book", command=self.remove_selected_book_from_inventory).pack(pady=5)
 
-        #TODO: Add update and remove book functions
         tk.Button(manage_books_tab, text="Update Book", command=self.update_book_info).pack(pady=5)
 
         # Add inventory tab
@@ -392,6 +400,9 @@ class BookstoreApp(tk.Tk):
         update_store(sid, name, address, hours, cid)
         messagebox.showinfo("Success", "Store updated successfully.")
         self.load_stores()
+    
+        messagebox.showinfo("Success", "Store updated successfully.")
+        self.load_stores()
 
     def remove_store(self):
         sid = int(self.store_update_entries["Store ID"].get())
@@ -446,6 +457,9 @@ class BookstoreApp(tk.Tk):
         update_employee(eid, first, last, pos, hire, sal, stor, cid)
         messagebox.showinfo("Success", "Employee updated successfully.")
         self.load_employees()
+    
+        messagebox.showinfo("Success", "Employee updated successfully.")
+        self.load_employees()
 
     def remove_employee(self):
         eid = int(self.employee_update_entries["Employee ID"].get())
@@ -491,6 +505,9 @@ class BookstoreApp(tk.Tk):
         update_supplier(sid, name, cp, ltd, cid)
         messagebox.showinfo("Success", "Supplier updated successfully.")
         self.load_suppliers()
+    
+        messagebox.showinfo("Success", "Supplier updated successfully.")
+        self.load_suppliers()
 
     def remove_supplier(self):
         sid = int(self.supplier_update_entries["Supplier ID"].get())
@@ -512,16 +529,55 @@ class BookstoreApp(tk.Tk):
 
     # --------- Customer Tab Helper Functions ----------
 
-    # TODO
+    def on_tab_changed(self, event):
+        selected_tab = event.widget.select()
+        tab_text = event.widget.tab(selected_tab, "text")
+        
+        # Check if we switched to the Customer tab
+        if tab_text == "Customer":
+            # Check if the subtab selected is the Search Books tab
+            customer_notebook = self.customer_tab.winfo_children()[0]  # The Notebook inside Customer tab
+            subtab_index = customer_notebook.index("current")
+            subtab_text = customer_notebook.tab(subtab_index, "text")
+            if subtab_text == "Search Books":
+                self.search_store_books()
+
     def search_store_books(self):
         criteria = self.search_entry.get().strip()
-        results = ""
+        self.search_results.delete("1.0", tk.END)
+        self.search_book_mapping.clear()
 
         if not criteria:
-            self.search_results.insert(tk.END, "Please enter search criteria")
+            # Show all books if search is empty
+            all_books = get_all_books()
+            for idx, book in enumerate(all_books, start=1):
+                book_id = book[0]
+                isbn = book[1]
+                title = book[2]
+                pub_date = book[3]
+                edition = book[4]
+                price = float(book[5])
+                page_count = book[6]
+                desc = book[7]
+                publisher_id = book[8]
+
+                authors = get_authors_by_book_id(book_id)
+                author_names = ", ".join(authors) if authors else "Unknown Author"
+                publisher_name = get_publisher_name(publisher_id) or "Unknown Publisher"
+
+                display_text = (
+                    f"[{idx}] {title} ({edition} edition, {pub_date})\n"
+                    f"Author(s): {author_names}\n"
+                    f"Publisher: {publisher_name}\n"
+                    f"ISBN: {isbn} | {page_count} pages | ${price:.2f}\n"
+                    f"{desc}\n"
+                    "----------------------------\n"
+                )
+                self.search_results.insert(tk.END, display_text)
+                self.search_book_mapping[idx] = book
             return
-            
-            
+
+        # Otherwise do filtered search
         author_results = search_books_by_author(criteria) or []
         title_results = search_books_by_title(criteria) or []
         genre_results = search_books_by_genre(criteria) or []
@@ -531,17 +587,13 @@ class BookstoreApp(tk.Tk):
         if isbn_result:
             combined_results.append(isbn_result)
 
-        # Deduplicate based on book_id (assuming it's at index 0)
+        # Deduplicate based on book_id
         unique_books = {}
         for book in combined_results:
-            isbn = book[0]  # adjust index if needed
+            isbn = book[0]
             unique_books[isbn] = book
 
-        self.search_results.delete("1.0", tk.END)
-
         if unique_books:
-            self.search_results.delete("1.0", tk.END)
-            self.search_book_mapping.clear()
             for idx, book in enumerate(unique_books.values(), start=1):
                 book_id = book[0]
                 isbn = book[1]
@@ -555,7 +607,6 @@ class BookstoreApp(tk.Tk):
 
                 authors = get_authors_by_book_id(book_id)
                 author_names = ", ".join(authors) if authors else "Unknown Author"
-
                 publisher_name = get_publisher_name(publisher_id) or "Unknown Publisher"
 
                 display_text = (
@@ -571,7 +622,25 @@ class BookstoreApp(tk.Tk):
         else:
             self.search_results.insert(tk.END, "No results found.")
 
+
     # --------- Inventory Tab Helper Functions ----------
+
+    def on_inventory_tab_changed(self, event):
+        selected_tab = event.widget.select()
+        tab_text = event.widget.tab(selected_tab, "text")
+
+        if tab_text == "Manage Book Database":
+            self.populate_manage_books_with_all()
+
+    def populate_manage_books_with_all(self):
+        self.manage_book_mapping.clear()
+        self.manage_inventory_listbox.delete(0, tk.END)
+        all_books = get_all_books()  # From inventory_operations
+        for idx, book in enumerate(all_books):
+            book_id = book[0]
+            title = book[2]
+            self.manage_book_mapping[idx] = book
+            self.manage_inventory_listbox.insert(tk.END, f"[{book_id}] {title}")
 
     def add_book_to_book_list(self):
         # Get user input
@@ -628,41 +697,84 @@ class BookstoreApp(tk.Tk):
 
         self.inventory_results.insert(tk.END, "No results found.")
 
+    
     def get_selected_book_id(self):
         try:
-            selection = self.inventory_results.get(self.inventory_results.curselection())
-            return int(selection.split()[1])  # Assumes format: "[Title] book_id - title"
-        except Exception:
-            messagebox.showwarning("Selection Error", "Please select a valid book entry.")
+            selection = self.manage_inventory_listbox.curselection()
+            if not selection:
+                messagebox.showwarning("Selection Error", "Please select a book to update.")
+                return None
+            index = selection[0]
+            book = self.manage_book_mapping.get(index)
+            if not book:
+                messagebox.showerror("Error", "Book not found.")
+                return None
+            return book[0]  # Return book_id
+        except Exception as e:
+            messagebox.showwarning("Selection Error", str(e))
             return None
+    
 
+    
     def update_book_info(self):
-        book_id = self.get_selected_book_id()
-        if not book_id:
-            return
-        
-        ISBN = self.book_entries["ISBN"].get()
-        title = self.book_entries.get("Title", None)
-        publication_date = self.book_entries["Publication Date"].get()
-        edition = self.book_entries["Edition"].get()
-        price = float(self.book_entries["Price"].get())
-        page_count = int(self.book_entries["Page Count"].get())
-        description = self.book_entries["Description"].get()
-        publisher_id = 1  # Placeholder
+        selection = self.manage_inventory_listbox.curselection()
 
-        update_book(book_id, ISBN, title, publication_date, edition, price, page_count, description, publisher_id)
-        messagebox.showinfo("Success", f"Book ID {book_id} updated.")
-
-    def remove_book_from_book_list(self):
-        book_id = self.get_selected_book_id()
-        if not book_id:
+        if not selection:
+            messagebox.showwarning("Selection Error", "Please select a book to update.")
             return
 
-        confirm = messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete Book ID {book_id}?")
-        if confirm:
-            delete_book(book_id)
-            self.inventory_results.delete(self.inventory_results.curselection())
-            messagebox.showinfo("Deleted", f"Book ID {book_id} removed.")
+        index = selection[0]
+
+        # Debug log
+        print("Selected index:", index)
+        print("Available keys in manage_book_mapping:", self.manage_book_mapping.keys())
+
+        book = self.manage_book_mapping.get(index)
+
+        if not book:
+            messagebox.showerror("Error", f"Book not found at index {index}.")
+            return
+
+        book_id = book[0]
+
+        popup = tk.Toplevel(self)
+        popup.title("Update Book Info")
+
+        fields = ["ISBN", "Title", "Publication Date", "Edition", "Price", "Page Count", "Description"]
+        values = book[1:8]
+        entries = {}
+
+        for i, field in enumerate(fields):
+            frm = tk.Frame(popup)
+            frm.pack(pady=2)
+            tk.Label(frm, text=field).pack(side=tk.LEFT)
+            ent = tk.Entry(frm, width=50)
+            ent.insert(0, str(values[i]))
+            ent.pack(side=tk.LEFT)
+            entries[field] = ent
+
+        def submit_update():
+            try:
+                ISBN = entries["ISBN"].get().strip()
+                title = entries["Title"].get().strip()
+                pub_date = entries["Publication Date"].get().strip()
+                edition = entries["Edition"].get().strip()
+                price = float(entries["Price"].get().strip())
+                page_count = int(entries["Page Count"].get().strip())
+                desc = entries["Description"].get().strip()
+                publisher_id = book[8]
+
+                update_book(book_id, ISBN, title, pub_date, edition, price, page_count, desc, publisher_id)
+                messagebox.showinfo("Success", f"Book ID {book_id} updated.")
+                popup.destroy()
+                self.search_store_books_for_management()
+            except Exception as e:
+                messagebox.showerror("Update Error", str(e))
+
+        tk.Button(popup, text="Update", command=submit_update).pack(pady=10)
+
+
+
 
     def add_book_to_inventory(self):
         book_id = self.inventory_entries["BookID"].get()
@@ -710,30 +822,22 @@ class BookstoreApp(tk.Tk):
 
         self.inventory_results.insert(tk.END, "No results found.")
 
+    
     def get_selected_book_id(self):
         try:
-            selection = self.inventory_results.get(self.inventory_results.curselection())
-            return int(selection.split()[1])  # Assumes format: "[Title] book_id - title"
-        except Exception:
-            messagebox.showwarning("Selection Error", "Please select a valid book entry.")
+            selection = self.manage_inventory_listbox.curselection()
+            if not selection:
+                messagebox.showwarning("Selection Error", "Please select a book to update.")
+                return None
+            index = selection[0]
+            book = self.manage_book_mapping.get(index)
+            if not book:
+                messagebox.showerror("Error", "Book not found.")
+                return None
+            return book[0]  # Return book_id
+        except Exception as e:
+            messagebox.showwarning("Selection Error", str(e))
             return None
-
-    def update_inventory_entry(self):
-        book_id = self.get_selected_book_id()
-        if not book_id:
-            return
-        
-        ISBN = self.book_entries["ISBN"].get()
-        title = self.book_entries.get("Title", None)
-        publication_date = self.book_entries["Publication Date"].get()
-        edition = self.book_entries["Edition"].get()
-        price = float(self.book_entries["Price"].get())
-        page_count = int(self.book_entries["Page Count"].get())
-        description = self.book_entries["Description"].get()
-        publisher_id = 1  # Placeholder
-
-        update_book(book_id, ISBN, title, publication_date, edition, price, page_count, description, publisher_id)
-        messagebox.showinfo("Success", f"Book ID {book_id} updated.")
 
     def remove_book_from_inventory(self):
         book_id = self.get_selected_book_id()
@@ -850,10 +954,20 @@ class BookstoreApp(tk.Tk):
 
     def search_store_books_for_management(self):
         criteria = self.manage_inventory_search_entry.get().strip()
+        self.manage_book_mapping.clear()
+        self.manage_inventory_listbox.delete(0, tk.END)
+
         if not criteria:
-            messagebox.showwarning("Input Error", "Please enter search criteria.")
+            # Show all books if search is empty
+            all_books = get_all_books()
+            for idx, book in enumerate(all_books):
+                book_id = book[0]
+                title = book[2]
+                self.manage_book_mapping[idx] = book
+                self.manage_inventory_listbox.insert(tk.END, f"[{book_id}] {title}")
             return
 
+        # Continue with filtered search logic
         author_results = search_books_by_author(criteria) or []
         title_results = search_books_by_title(criteria) or []
         genre_results = search_books_by_genre(criteria) or []
@@ -868,14 +982,12 @@ class BookstoreApp(tk.Tk):
             isbn = book[0]
             unique_books[isbn] = book
 
-        self.manage_book_mapping.clear()
-        self.manage_inventory_listbox.delete(0, tk.END)
-
         for idx, book in enumerate(unique_books.values(), start=1):
             book_id = book[0]
             title = book[2]
-            self.manage_book_mapping[idx - 1] = book  # Listbox uses 0-based index
+            self.manage_book_mapping[idx - 1] = book
             self.manage_inventory_listbox.insert(tk.END, f"[{book_id}] {title}")
+
 
     def remove_selected_book_from_inventory(self):
         selection = self.manage_inventory_listbox.curselection()
