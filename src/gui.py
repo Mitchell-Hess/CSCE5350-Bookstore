@@ -244,6 +244,8 @@ class BookstoreApp(tk.Tk):
             frm.pack(pady=5)
             tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
             ent = tk.Entry(frm, width=50);
+            if fld.endswith("ID"):
+                ent.configure(bg="#f0f0f0", state="normal")
             ent.pack(side=tk.LEFT)
             self.store_add_entries[fld] = ent
         tk.Button(add_store, text="Add Store", command=self.add_store).pack(pady=10)
@@ -256,6 +258,8 @@ class BookstoreApp(tk.Tk):
             frm.pack(pady=5)
             tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
             ent = tk.Entry(frm, width=50);
+            if fld.endswith("ID"):
+                ent.configure(bg="#f0f0f0", state="normal")
             ent.pack(side=tk.LEFT)
             self.store_update_entries[fld] = ent
         tk.Button(upd_store, text="Update Store", command=self.edit_store).pack(pady=10)
@@ -284,6 +288,8 @@ class BookstoreApp(tk.Tk):
             frm.pack(pady=5)
             tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
             ent = tk.Entry(frm, width=50);
+            if fld.endswith("ID"):
+                ent.configure(bg="#f0f0f0", state="normal")
             ent.pack(side=tk.LEFT)
             self.employee_add_entries[fld] = ent
         tk.Button(add_emp, text="Add Employee", command=self.add_employee).pack(pady=10)
@@ -296,6 +302,8 @@ class BookstoreApp(tk.Tk):
             frm.pack(pady=5)
             tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
             ent = tk.Entry(frm, width=50);
+            if fld.endswith("ID"):
+                ent.configure(bg="#f0f0f0", state="normal")
             ent.pack(side=tk.LEFT)
             self.employee_update_entries[fld] = ent
         tk.Button(upd_emp, text="Update Employee", command=self.edit_employee).pack(pady=10)
@@ -324,6 +332,8 @@ class BookstoreApp(tk.Tk):
             frm.pack(pady=5)
             tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
             ent = tk.Entry(frm, width=50);
+            if fld.endswith("ID"):
+                ent.configure(bg="#f0f0f0", state="normal")
             ent.pack(side=tk.LEFT)
             self.supplier_add_entries[fld] = ent
         tk.Button(add_sup, text="Add Supplier", command=self.add_supplier).pack(pady=10)
@@ -336,6 +346,8 @@ class BookstoreApp(tk.Tk):
             frm.pack(pady=5)
             tk.Label(frm, text=fld).pack(side=tk.LEFT, padx=10)
             ent = tk.Entry(frm, width=50);
+            if fld.endswith("ID"):
+                ent.configure(bg="#f0f0f0", state="normal")
             ent.pack(side=tk.LEFT)
             self.supplier_update_entries[fld] = ent
         tk.Button(upd_sup, text="Update Supplier", command=self.edit_supplier).pack(pady=10)
@@ -365,12 +377,18 @@ class BookstoreApp(tk.Tk):
         messagebox.showinfo("Success", "Store added successfully.")
         self.load_stores()
 
+    
     def edit_store(self):
         sid = int(self.store_update_entries["Store ID"].get())
-        name = self.store_update_entries["Name"].get()
-        address = self.store_update_entries["Address"].get()
-        hours = self.store_update_entries["Opening Hours"].get()
-        cid = int(self.store_update_entries["Contact ID"].get())
+        existing = read_store(sid)
+        if not existing:
+            messagebox.showerror("Error", "Store not found.")
+            return
+        name = self.store_update_entries["Name"].get() or existing[1]
+        address = self.store_update_entries["Address"].get() or existing[2]
+        hours = self.store_update_entries["Opening Hours"].get() or existing[3]
+        cid = self.store_update_entries["Contact ID"].get()
+        cid = int(cid) if cid else existing[4]
         update_store(sid, name, address, hours, cid)
         messagebox.showinfo("Success", "Store updated successfully.")
         self.load_stores()
@@ -408,15 +426,23 @@ class BookstoreApp(tk.Tk):
         messagebox.showinfo("Success", "Employee added successfully.")
         self.load_employees()
 
+    
     def edit_employee(self):
         eid = int(self.employee_update_entries["Employee ID"].get())
-        first = self.employee_update_entries["First Name"].get()
-        last = self.employee_update_entries["Last Name"].get()
-        pos = self.employee_update_entries["Position"].get()
-        hire = self.employee_update_entries["Hire Date"].get()
-        sal = float(self.employee_update_entries["Salary"].get())
-        stor = int(self.employee_add_entries["Store ID"].get())
-        cid = int(self.employee_update_entries["Contact ID"].get())
+        existing = read_employee(eid)
+        if not existing:
+            messagebox.showerror("Error", "Employee not found.")
+            return
+        first = self.employee_update_entries["First Name"].get() or existing[1]
+        last = self.employee_update_entries["Last Name"].get() or existing[2]
+        pos = self.employee_update_entries["Position"].get() or existing[3]
+        hire = self.employee_update_entries["Hire Date"].get() or existing[4].strftime("%Y-%m-%d")
+        sal = self.employee_update_entries["Salary"].get()
+        sal = float(sal) if sal else existing[5]
+        stor = self.employee_update_entries["Store ID"].get()
+        stor = int(stor) if stor else existing[6]
+        cid = self.employee_update_entries["Contact ID"].get()
+        cid = int(cid) if cid else existing[7]
         update_employee(eid, first, last, pos, hire, sal, stor, cid)
         messagebox.showinfo("Success", "Employee updated successfully.")
         self.load_employees()
@@ -449,12 +475,19 @@ class BookstoreApp(tk.Tk):
         messagebox.showinfo("Success", "Supplier added successfully.")
         self.load_suppliers()
 
+    
     def edit_supplier(self):
         sid = int(self.supplier_update_entries["Supplier ID"].get())
-        name = self.supplier_update_entries["Name"].get()
-        cp = self.supplier_update_entries["Contact Person"].get()
-        ltd = int(self.supplier_update_entries["Lead Time Days"].get())
-        cid = int(self.supplier_update_entries["Contact ID"].get())
+        existing = read_supplier(sid)
+        if not existing:
+            messagebox.showerror("Error", "Supplier not found.")
+            return
+        name = self.supplier_update_entries["Name"].get() or existing[1]
+        cp = self.supplier_update_entries["Contact Person"].get() or existing[2]
+        ltd = self.supplier_update_entries["Lead Time Days"].get()
+        ltd = int(ltd) if ltd else existing[3]
+        cid = self.supplier_update_entries["Contact ID"].get()
+        cid = int(cid) if cid else existing[4]
         update_supplier(sid, name, cp, ltd, cid)
         messagebox.showinfo("Success", "Supplier updated successfully.")
         self.load_suppliers()

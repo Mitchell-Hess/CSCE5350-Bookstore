@@ -35,7 +35,7 @@ def update_store(store_id, name, address, opening_hours, contact_id):
     conn = get_connection()
     cursor = conn.cursor()
     sql = '''UPDATE Store
-             SET name = %s, address = %s, opening_hours = %s, contact_id
+             SET name = %s, address = %s, opening_hours = %s, contact_id = %s
              WHERE store_id = %s'''
     cursor.execute(sql, (name, address, opening_hours, contact_id, store_id))
     conn.commit()
